@@ -1,11 +1,16 @@
-import twMerge from 'tailwind-merge';
+import {
+  startSubmission
+} from '@/server/Main';
 
 export default async function Home() {
-  const message = 'eat my shorts';
-
+  const submission = await startSubmission(1, 1, 1, 1);
   return (
     <div>
-      <h1>{message}</h1>
+      {JSON.stringify(
+        submission.body?.data,
+        null,
+        2
+      )}
     </div>
   );
 }

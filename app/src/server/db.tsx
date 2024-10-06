@@ -13,3 +13,20 @@ export const pool = new Pool({
 export const getPool = () => pool;
 
 export const getClient = () => pool.connect();
+
+export const withTransaction = async <T,>(
+  fn: (client: pg.PoolClient) => Promise<T>
+): Promise<T> => {
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}

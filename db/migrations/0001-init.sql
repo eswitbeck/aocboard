@@ -35,47 +35,54 @@ CREATE TABLE IF NOT EXISTS UserLeaderBoard (
 );
 
 CREATE TABLE IF NOT EXISTS LeaderBoardYear (
-    id SERIAL PRIMARY KEY,
     year SMALLINT NOT NULL,
     leaderboard_id INT NOT NULL,
-    FOREIGN KEY (leaderboard_id) REFERENCES LeaderBoard(id) ON DELETE CASCADE
+    FOREIGN KEY (leaderboard_id) REFERENCES LeaderBoard(id) ON DELETE CASCADE,
+    PRIMARY KEY (year, leaderboard_id)
 );
 
 CREATE TABLE IF NOT EXISTS LeaderBoardDay (
-    id SERIAL PRIMARY KEY,
     day SMALLINT NOT NULL,
-    year_id INT NOT NULL,
-    FOREIGN KEY (year_id) REFERENCES LeaderBoardYear(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS Submission (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
-    day_id INT NOT NULL,
-    start_time TIMESTAMP NOT NULL,
-    star_1_end_time TIMESTAMP,
-    star_2_end_time TIMESTAMP,
-    score INT NOT NULL DEFAULT 0,
-    language_id INT,
-    FOREIGN_KEY (language_id) REFERENCES Language(id),
-    link VARCHAR(255),
-    note VARCHAR(255),
-    FOREIGN KEY (user_id) REFERENCES AppUser(id) ON DELETE CASCADE,
-    FOREIGN KEY (day_id) REFERENCES LeaderBoardDay(id) ON DELETE CASCADE,
-    CONSTRAINT submission_time_sequence CHECK (
-        start_time <= COALESCE(star_1_end_time, start_time) AND
-        COALESCE(star_1_end_time, start_time) <= COALESCE(star_2_end_time, COALESCE(star_1_end_time, start_time))
-    ),
-    CONSTRAINT submission_star2_requires_star1 CHECK (
-        star_2_end_time IS NULL OR star_1_end_time IS NOT NULL
-    ),
-    UNIQUE (user_id, day_id)
+    year SMALLINT NOT NULL,
+    leaderboard_id INT NOT NULL,
+    FOREIGN KEY (year, leaderboard_id)
+      REFERENCES LeaderBoardYear(year, leaderboard_id) ON DELETE CASCADE,
+    PRIMARY KEY (day, year, leaderboard_id)
 );
 
 CREATE TABLE IF NOT EXISTS Language (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     UNIQUE (name)
+);
+
+CREATE TABLE IF NOT EXISTS Submission (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    day SMALLINT NOT NULL,
+    year SMALLINT NOT NULL,
+    leaderboard_id INT NOT NULL,
+    start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    star_1_end_time TIMESTAMP,
+    star_2_end_time TIMESTAMP,
+    score INT NOT NULL DEFAULT 0,
+    language_id INT,
+    link VARCHAR(255),
+    note VARCHAR(255),
+
+    FOREIGN KEY (language_id) REFERENCES Language(id),
+    FOREIGN KEY (user_id) REFERENCES AppUser(id) ON DELETE CASCADE,
+    FOREIGN KEY (day, year, leaderboard_id)
+      REFERENCES LeaderBoardDay(day, year, leaderboard_id) ON DELETE CASCADE,
+    UNIQUE (user_id, day, year, leaderboard_id),
+
+    CONSTRAINT submission_time_sequence CHECK (
+        start_time <= COALESCE(star_1_end_time, start_time) AND
+        COALESCE(star_1_end_time, start_time) <= COALESCE(star_2_end_time, COALESCE(star_1_end_time, start_time))
+    ),
+    CONSTRAINT submission_star2_requires_star1 CHECK (
+        star_2_end_time IS NULL OR star_1_end_time IS NOT NULL
+    )
 );
 
 CREATE TABLE IF NOT EXISTS SubmissionPause (

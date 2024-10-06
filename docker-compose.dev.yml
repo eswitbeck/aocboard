@@ -7,6 +7,7 @@ services:
       - main
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./db/migrations:/home/migrations
     restart: unless-stopped
 
   web:
