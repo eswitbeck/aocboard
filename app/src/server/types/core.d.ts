@@ -34,7 +34,6 @@ type s_Day = {
 };
 
 type s_Submission = {
-  id: number;
   user_id: number;
   day: number;
   year: number;
@@ -50,7 +49,10 @@ type s_Submission = {
 
 type s_Pause = {
   id: number;
-  submission_id: number;
+  day: number;
+  year: number;
+  leaderboard_id: number;
+  user_id: number;
   parent_id: number | null;
   type: 'pause' | 'resume';
   time: number;

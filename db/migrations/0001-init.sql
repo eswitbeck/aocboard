@@ -57,7 +57,6 @@ CREATE TABLE IF NOT EXISTS Language (
 );
 
 CREATE TABLE IF NOT EXISTS Submission (
-    id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     day SMALLINT NOT NULL,
     year SMALLINT NOT NULL,
@@ -74,7 +73,7 @@ CREATE TABLE IF NOT EXISTS Submission (
     FOREIGN KEY (user_id) REFERENCES AppUser(id) ON DELETE CASCADE,
     FOREIGN KEY (day, year, leaderboard_id)
       REFERENCES LeaderBoardDay(day, year, leaderboard_id) ON DELETE CASCADE,
-    UNIQUE (user_id, day, year, leaderboard_id),
+    PRIMARY KEY (user_id, day, year, leaderboard_id),
 
     CONSTRAINT submission_time_sequence CHECK (
         start_time <= COALESCE(star_1_end_time, start_time) AND
@@ -87,11 +86,16 @@ CREATE TABLE IF NOT EXISTS Submission (
 
 CREATE TABLE IF NOT EXISTS SubmissionPause (
     id SERIAL PRIMARY KEY,
-    submission_id INT NOT NULL,
+    day SMALLINT NOT NULL,
+    year SMALLINT NOT NULL,
+    leaderboard_id INT NOT NULL,
+    user_id INT NOT NULL,
     type VARCHAR(6) NOT NULL,
     parent_id INT,
     time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (submission_id) REFERENCES Submission(id) ON DELETE CASCADE,
+
+    FOREIGN KEY (user_id, day, year, leaderboard_id)
+      REFERENCES Submission(user_id, day, year, leaderboard_id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES SubmissionPause(id) ON DELETE CASCADE,
     CONSTRAINT submissionpause_type_check CHECK (
         type IN ('pause', 'resume')

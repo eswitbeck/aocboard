@@ -28,7 +28,6 @@ type Day = {
 };
 
 type Submission = {
-  id: number,
   user_id: number,
   day: number,
   year: number,
@@ -44,7 +43,6 @@ type Submission = {
 
 type Pause = {
   id: number,
-  submission_id: number,
   start_time: number,
   end_time: number | null
 };

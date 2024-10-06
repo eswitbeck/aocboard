@@ -1,16 +1,19 @@
 import {
-  startSubmission
+  startSubmission,
+  getSubmission
 } from '@/server/Main';
 
 export default async function Home() {
-  const submission = await startSubmission(1, 1, 1, 1);
+  const submission = await getSubmission(1, 1, 1, 1);
+  const now = new Date().getTime();
+  const start = submission.body?.data.start_time;
+
+  const diff = !start ? null : now - start;
+
   return (
     <div>
-      {JSON.stringify(
-        submission.body?.data,
-        null,
-        2
-      )}
+      {diff && new Date(diff).toLocaleDateString(undefined,
+        { hour: 'numeric', minute: 'numeric', second: 'numeric'})}
     </div>
   );
 }

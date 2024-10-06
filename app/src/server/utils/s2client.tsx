@@ -10,10 +10,11 @@ export const s_Submission2Submission = (
     if (s_Pause.type === 'pause') {
       pauseMap[s_Pause.id] = {
         id: s_Pause.id,
-        submission_id: s_Pause.submission_id,
         start_time: s_Pause.time,
         end_time: null
       };
+    } else if (null === s_Pause.id) {
+      continue;
     } else {
       if (!Object.hasOwn(pauseMap, s_Pause.parent_id!)) {
         throw new Error('resume without pause');
@@ -27,7 +28,6 @@ export const s_Submission2Submission = (
   );
 
   return {
-    id: s_Submission.id,
     user_id: s_Submission.user_id,
     day: s_Submission.day,
     year: s_Submission.year,
