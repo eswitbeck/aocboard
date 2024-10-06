@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16.4-alpine
+    container_name: db
+    env_file: .env
+    networks:
+      - main
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./app
+      dockerfile: ../web.dev.Dockerfile
+    container_name: web
+    depends_on:
+      - db
+    links:
+      - db
+    env_file: .env
+    networks:
+      - main
+    restart: unless-stopped
+    expose:
+      - 3000
+    ports:
+      - 3000:3000
+    volumes:
+      - ./app:/home/node/app
+      - /home/node/app/node_modules
+
+networks:
+  main:
+    name: main
+
+volumes:
+  db_data:
