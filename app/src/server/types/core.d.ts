@@ -39,8 +39,8 @@ type s_Submission = {
   year: number;
   leaderboard_id: number;
   start_time: string;
-  star_1_time: string | null;
-  star_2_time: string | null;
+  star_1_end_time: string | null;
+  star_2_end_time: string | null;
   score: number;
   language: string | null;
   link: string | null;

@@ -33,12 +33,12 @@ export const s_Submission2Submission = (
     year: s_Submission.year,
     leaderboard_id: s_Submission.leaderboard_id,
     start_time: new Date(s_Submission.start_time).getTime(),
-    star_1_time: null === s_Submission.star_1_time
+    star_1_end_time: null === s_Submission.star_1_end_time
       ? null
-      : new Date(s_Submission.star_1_time).getTime(),
-    star_2_time: null === s_Submission.star_2_time
+      : new Date(s_Submission.star_1_end_time).getTime(),
+    star_2_end_time: null === s_Submission.star_2_end_time
       ? null
-      : new Date(s_Submission.star_2_time).getTime(),
+      : new Date(s_Submission.star_2_end_time).getTime(),
     language: s_Submission.language,
     link: s_Submission.link,
     note: s_Submission.note,

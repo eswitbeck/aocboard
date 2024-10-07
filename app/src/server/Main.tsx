@@ -22,12 +22,89 @@ import {
 //  - get rankings
 //  - get star data
 
+const timeString2Timestamp = (time: string | null): number | null => {
+  if (!time) {
+    return null;
+  }
+  return new Date(time).getTime();
+}
+
+type TotalTime = {
+  totalTime: number,
+  lastTimestamp?: number
+}
+
+const getTotalTime = (
+  submission: s_Submission,
+  pauses: s_Pause[]
+): TotalTime => {
+  const startToStar1 = [];
+  const star1ToStar2 = [];
+
+  const [start, star1Time, star2Time] = [
+    submission.start_time,
+    submission.star_1_end_time,
+    submission.star_2_end_time
+  ].map(timeString2Timestamp);
+
+  for (const p of pauses) {
+    if (!star1Time  || p.time <= star1Time) {
+      startToStar1.push(p);
+    } else {
+      star1ToStar2.push(p);
+    }
+  }
+
+  const times = [
+    {
+      time: start,
+      type: 'resume'
+    },
+    ...startToStar1,
+    ...(star1Time 
+      ? [{
+        time: star1Time,
+        type: 'pause'
+      }, {
+        time: star1Time,
+        type: 'resume'
+      }]
+      : []),
+    ...star1ToStar2,
+    ...(star2Time
+      ? [{
+        time: star2Time,
+        type: 'pause'
+      }]
+      : [])
+  ];
+
+  let totalTime = 0;
+  for (let i = 0; i < times.length; i += 2) {
+    const start = times[i];
+    const end = times?.[i + 1];
+
+    if (end) {
+      totalTime += end.time! - start.time!;
+    } else {
+      return {
+        totalTime,
+        lastTimestamp: start.time!
+      };
+    }
+  }
+
+  return {
+    totalTime
+  };
+}
+
 export const getSubmission = async (
   userId: number | null,
   day: number,
   year: number,
   leaderboardId: number
-): Promise<HTTPLike<Submission | null>> => {
+): Promise<HTTPLike<Submission | null> & { body?: { total_time: TotalTime; }}> => {
   if (!userId) {
     return { status: 401 };
   }
@@ -85,6 +162,7 @@ export const getSubmission = async (
     return {
       status: 200,
       body: {
+        total_time: getTotalTime(s_Submission, s_Pauses),
         data: clientSubmission
       }
     };
@@ -198,6 +276,9 @@ export const pauseSubmission = async (
 
     return {
       status: 201,
+      body: {
+        data: s_Pause
+      }
     };
   }
 
@@ -207,7 +288,6 @@ export const pauseSubmission = async (
     return { status: 500, error: error.message };
   }
 }
-
 
 export const resumeSubmission = async (
   userId: number | null,

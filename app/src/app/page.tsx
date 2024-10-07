@@ -1,5 +1,7 @@
 import { revalidatePath } from 'next/cache';
 
+import { convertToTimeString } from '@/shared/utils';
+
 import {
   startSubmission,
   getSubmission,
@@ -38,15 +40,15 @@ export default async function Home() {
   }
 
   const submission = response.body?.data!;
+  const totalTime = response.body?.total_time!;
 
-  const isPaused = submission.pauses.length &&
-    !submission.pauses[submission.pauses.length - 1].end_time;
+  const isPaused = !Object.hasOwn(totalTime, 'lastTimestamp');
 
   if (!isPaused) {
     return (
       <div>
         <Clock
-          startingDiff={time.getTime() - submission.start_time}
+          startingDiff={totalTime.totalTime + time.getTime() - totalTime.lastTimestamp!}
         />
         <ServerActionButton
           fn={async () => {
@@ -60,16 +62,11 @@ export default async function Home() {
       </div>
     );
   }
-  
-  // calc total time
-  // events start (pause resume?)* 
-  // star_1_time?
-  // (pause resume?)*
-  // star_2_time?
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       Paused
+      {convertToTimeString(totalTime.totalTime)}
       <ServerActionButton
         fn={async () => {
           'use server';
