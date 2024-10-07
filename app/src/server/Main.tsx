@@ -45,7 +45,10 @@ const getTotalTime = (
 
   for (const p of pauses) {
     const time = timeString2Timestamp(p.time);
-    if (!star1Time  || time! <= star1Time) {
+    if (!time) {
+      continue;
+    }
+    if (!star1Time  || time <= star1Time) {
       startToStar1.push({
         time: time,
         type: p.type
@@ -356,6 +359,39 @@ export const resumeSubmission = async (
 //  - add star 1 to submission
 //  - add star 2 to submission (finish)
 // delete submission (restart)
+export const deleteSubmission = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number
+): Promise<HTTPLike<Submission>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: [s_Submission] } = await pool.query(
+      `DELETE FROM Submission
+       WHERE user_id = $1
+        AND day = $2
+        AND year = $3
+        AND leaderboard_id = $4
+       RETURNING *;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (!s_Submission) {
+      return { status: 404, error: 'no submission' };
+    }
+
+    return {
+      status: 204,
+    };
+  } catch (error) {
+    return { status: 500, error };
+  }
+}
 // edit submission
 // add language to list
 //
