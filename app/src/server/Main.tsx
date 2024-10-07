@@ -1,3 +1,5 @@
+'use server';
+
 import {
   getPool,
   getClient,
@@ -20,13 +22,12 @@ import {
 //  - get rankings
 //  - get star data
 
-// get submission data
 export const getSubmission = async (
   userId: number | null,
   day: number,
   year: number,
   leaderboardId: number
-): Promise<HTTPLike<Submission>> => {
+): Promise<HTTPLike<Submission | null>> => {
   if (!userId) {
     return { status: 401 };
   }
@@ -75,6 +76,10 @@ export const getSubmission = async (
       time: row.sp_time
     }));
 
+    if (!s_Submission) {
+      return { status: 404, error: 'no submission' };
+    }
+
     const clientSubmission = s_Submission2Submission(s_Submission, s_Pauses);
 
     return {
@@ -88,7 +93,6 @@ export const getSubmission = async (
   }
 }
 
-// start submission
 export const startSubmission = async (
   userId: number | null,
   day: number,
@@ -152,11 +156,117 @@ export const startSubmission = async (
   }
 }
 
-// pause submission
+export const pauseSubmission = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number
+): Promise<HTTPLike<{ time: number }>> => {
+  const time = new Date()
+    .toISOString()
+    .slice(0, 19)
+    .replace('T', ' ');
 
-// resume submission
-// add star 1 to submission
-// add star 2 to submission (finish)
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [last_s_Pause] } = await client.query(
+      `SELECT type
+       FROM SubmissionPause
+       WHERE user_id = $1
+        AND day = $2
+        AND year = $3
+        AND leaderboard_id = $4
+       ORDER BY time DESC
+       LIMIT 1;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (last_s_Pause && last_s_Pause.type === 'pause') {
+      return { status: 400, error: 'already paused' };
+    }
+
+    const { rows: [s_Pause] } = await client.query(
+      `INSERT INTO SubmissionPause
+       (user_id, day, year, leaderboard_id, type, time)
+       VALUES ($1, $2, $3, $4, 'pause', $5)
+       RETURNING time;`,
+      [userId, day, year, leaderboardId, time]
+    );
+
+    return {
+      status: 201,
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error: any) {
+    return { status: 500, error: error.message };
+  }
+}
+
+
+export const resumeSubmission = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number
+): Promise<HTTPLike<{ time: number }>> => {
+  const time = new Date()
+    .toISOString()
+    .slice(0, 19)
+    .replace('T', ' ');
+
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [last_s_Pause] } = await client.query(
+      `SELECT id, type
+       FROM SubmissionPause
+       WHERE user_id = $1
+        AND day = $2
+        AND year = $3
+        AND leaderboard_id = $4
+       ORDER BY time DESC
+       LIMIT 1;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (!last_s_Pause || last_s_Pause.type === 'resume') {
+      return { status: 400, error: 'already resumed' };
+    }
+
+    const { rows: [s_Pause] } = await client.query(
+      `INSERT INTO SubmissionPause
+       (user_id, day, year, leaderboard_id, type, time, parent_id)
+       VALUES ($1, $2, $3, $4, 'resume', $5, $6)
+       RETURNING time;`,
+      [userId, day, year, leaderboardId, time, last_s_Pause.id]
+    );
+
+    return {
+      status: 201,
+      body: {
+        data: s_Pause
+      }
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    return { status: 500, error };
+  }
+}
+
+// complete submission
+//  - add star 1 to submission
+//  - add star 2 to submission (finish)
 // delete submission (restart)
 // edit submission
 // add language to list
