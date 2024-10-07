@@ -65,9 +65,10 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-2">
-      Paused
-      {convertToTimeString(totalTime.totalTime)}
+      <p>Paused</p>
+      <p>{convertToTimeString(totalTime.totalTime)}</p>
       <ServerActionButton
+        className="border border-black max-w-max px-2 py-1"
         fn={async () => {
           'use server';
           const response = await resumeSubmission(1, 1, 1, 1);
