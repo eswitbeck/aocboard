@@ -1,3 +1,7 @@
+import {
+  timeString2Timestamp
+} from '@/shared/utils';
+
 /** Presumes all s_Pauses point to the same s_Submission, and that all resumes
 * * succeed their respective pauses
 * */
@@ -10,7 +14,7 @@ export const s_Submission2Submission = (
     if (s_Pause.type === 'pause') {
       pauseMap[s_Pause.id] = {
         id: s_Pause.id,
-        start_time: s_Pause.time,
+        start_time: timeString2Timestamp(s_Pause.time) as number,
         end_time: null
       };
     } else if (null === s_Pause.id) {
@@ -19,7 +23,7 @@ export const s_Submission2Submission = (
       if (!Object.hasOwn(pauseMap, s_Pause.parent_id!)) {
         throw new Error('resume without pause');
       }
-      pauseMap[s_Pause.parent_id!].end_time = s_Pause.time;
+      pauseMap[s_Pause.parent_id!].end_time = timeString2Timestamp(s_Pause.time) as number;
     }
   }
 

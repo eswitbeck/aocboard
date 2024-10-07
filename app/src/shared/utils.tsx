@@ -13,3 +13,10 @@ export const convertToTimeString = (diff: number | null): string | null => {
   return `${hours}:${minutes}:${seconds}`;
 }
 
+export const timeString2Timestamp = (time: string | null): number | null => {
+  if (!time) {
+    return null;
+  }
+  return new Date(time).getTime();
+}
+

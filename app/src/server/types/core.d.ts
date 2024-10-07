@@ -55,5 +55,5 @@ type s_Pause = {
   user_id: number;
   parent_id: number | null;
   type: 'pause' | 'resume';
-  time: number;
+  time: string;
 };

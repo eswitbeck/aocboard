@@ -1,7 +1,8 @@
 'use client';
 import {
   useEffect,
-  useState
+  useState,
+  useRef
 } from 'react';
 
 import { convertToTimeString } from '@/shared/utils';
@@ -13,13 +14,18 @@ export default function Clock ({
 }) {
   'use client';
   const [diff, setDiff] = useState<number | null>(
-    null === startingDiff ? null : Date.now() - startingDiff
+    null === startingDiff ? null : startingDiff
   );
+  const diffRef = useRef(diff);
+
+  useEffect(() => {
+    diffRef.current = diff;
+  }, [diff]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (null !== diff) {
-        setDiff(Date.now() - diff);
+      if (null !== diffRef.current) {
+        setDiff(diffRef.current + 1000);
       }
     }, 1000);
     return () => clearInterval(interval);

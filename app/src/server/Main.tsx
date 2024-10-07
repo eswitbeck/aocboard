@@ -1,12 +1,15 @@
 'use server';
+import pg from 'pg';
+
+import {
+  timeString2Timestamp
+} from '@/shared/utils';
 
 import {
   getPool,
   getClient,
   withTransaction
 } from './db';
-
-import pg from 'pg';
 
 import {
   s_Submission2Submission
@@ -21,13 +24,6 @@ import {
 //  - get realtime data
 //  - get rankings
 //  - get star data
-
-const timeString2Timestamp = (time: string | null): number | null => {
-  if (!time) {
-    return null;
-  }
-  return new Date(time).getTime();
-}
 
 type TotalTime = {
   totalTime: number,
@@ -48,10 +44,17 @@ const getTotalTime = (
   ].map(timeString2Timestamp);
 
   for (const p of pauses) {
-    if (!star1Time  || p.time <= star1Time) {
-      startToStar1.push(p);
+    const time = timeString2Timestamp(p.time);
+    if (!star1Time  || time! <= star1Time) {
+      startToStar1.push({
+        time: time,
+        type: p.type
+      });
     } else {
-      star1ToStar2.push(p);
+      star1ToStar2.push({
+        time: time,
+        type: p.type
+      });
     }
   }
 
@@ -83,6 +86,11 @@ const getTotalTime = (
   for (let i = 0; i < times.length; i += 2) {
     const start = times[i];
     const end = times?.[i + 1];
+
+    if (start.type !== 'resume' ||
+      (end && end.type !== 'pause')) {
+      throw new Error('invalid pause/resume sequence');
+    }
 
     if (end) {
       totalTime += end.time! - start.time!;
@@ -141,7 +149,7 @@ export const getSubmission = async (
       sp_submission_id: number,
       sp_parent_id: number | null,
       sp_type: 'pause' | 'resume',
-      sp_time: number
+      sp_time: string
     }) => ({
       id: row.sp_id,
       day: row.day,
@@ -312,7 +320,7 @@ export const resumeSubmission = async (
         AND day = $2
         AND year = $3
         AND leaderboard_id = $4
-       ORDER BY time DESC
+       ORDER BY time DESC, type ASC
        LIMIT 1;`,
       [userId, day, year, leaderboardId]
     );
