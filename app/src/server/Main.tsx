@@ -25,11 +25,6 @@ import {
 //  - get rankings
 //  - get star data
 
-type TotalTime = {
-  totalTime: number,
-  lastTimestamp?: string
-}
-
 const getTotalTime = (
   submission: s_Submission,
   pauses: s_Pause[]
@@ -352,11 +347,67 @@ export const resumeSubmission = async (
   }
 }
 
-// complete submission
-//  - add star 1 to submission
-//  - add star 2 to submission (finish)
-// delete submission (restart)
-export const deleteSubmission = async (
+export const completeSubmission = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number
+): Promise<HTTPLike<Submission>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const time = new Date()
+    .toISOString();
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [stageResult] } = await client.query(
+      `SELECT
+       CASE
+         WHEN s.star_1_end_time IS NULL THEN 'star_1'
+         ELSE 'star_2'
+       END AS stage
+       FROM Submission s
+       WHERE user_id = $1
+        AND day = $2
+        AND year = $3
+        AND leaderboard_id = $4;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (!stageResult) {
+      return { status: 404, error: 'no submission' };
+    }
+
+    const { stage } = stageResult;
+
+    const { rows: [s_Submission] } = await client.query(
+      `UPDATE Submission
+       SET ${stage}_end_time = $1
+       WHERE user_id = $2
+        AND day = $3
+        AND year = $4
+        AND leaderboard_id = $5
+       RETURNING *;`,
+      [time, userId, day, year, leaderboardId]
+    );
+
+    return {
+      status: 200,
+      body: {
+        data: s_Submission
+      }
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    return { status: 500, error };
+  }
+}
+
+export const restartSubmission = async (
   userId: number | null,
   day: number,
   year: number,
@@ -389,9 +440,12 @@ export const deleteSubmission = async (
     return { status: 500, error };
   }
 }
+
 // edit submission
+// update pause
+
 // add language to list
-//
+
 // update account (link, password??, display name)
 // get account data
 //

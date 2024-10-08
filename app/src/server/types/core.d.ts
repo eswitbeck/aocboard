@@ -57,3 +57,8 @@ type s_Pause = {
   type: 'pause' | 'resume';
   time: Date;
 };
+
+type TotalTime = {
+  totalTime: number,
+  lastTimestamp?: string
+}
