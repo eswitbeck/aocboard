@@ -1,6 +1,9 @@
 import { revalidatePath } from 'next/cache';
 
-import { convertToTimeString } from '@/shared/utils';
+import {
+  timestamp2Clock,
+  timestamp2TimeString
+} from '@/shared/utils';
 
 import {
   startSubmission,
@@ -11,8 +14,8 @@ import {
 } from '@/server/Main';
 
 import Clock from '@/app/_components/Clock';
+import PausesList from '@/app/_components/PausesList';
 import ServerActionButton from '@/app/_components/ServerActionButton';
-
 
 export default async function Home() {
   const time = new Date();
@@ -21,15 +24,7 @@ export default async function Home() {
   if (response.status === 404) {
     return <div>
       You haven't started yet
-      <ServerActionButton
-        fn={async () => {
-          'use server';
-          const response = await startSubmission(1, 1, 1, 1);
-          revalidatePath('/');
-        }}
-      >
-        Start
-      </ServerActionButton>
+      <StartButton />
     </div>
   }
 
@@ -48,28 +43,13 @@ export default async function Home() {
     return (
       <div>
         <Clock
-          startingDiff={totalTime.totalTime + time.getTime() - totalTime.lastTimestamp!}
+          startingDiff={totalTime.totalTime +
+            time.getTime() -
+            new Date(totalTime.lastTimestamp!).getTime()}
         />
-        <ServerActionButton
-          fn={async () => {
-            'use server';
-            const response = await pauseSubmission(1, 1, 1, 1);
-            revalidatePath('/');
-          }}
-       >
-        Pause
-      </ServerActionButton>
-      <RestartButton />
-      <ul className="flex flex-col gap-2">
-        {submission.pauses.map((pause) => (
-          <li key={pause.id}>
-            <div className="flex gap-2">
-              <p>{pause.start_time}</p>
-              <p>{pause.end_time}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+        <PauseButton />
+        <RestartButton />
+        <PausesList pauses={submission.pauses} />
       </div>
     );
   }
@@ -77,29 +57,53 @@ export default async function Home() {
   return (
     <div className="flex flex-col gap-2">
       <p>Paused</p>
-      <p>{convertToTimeString(totalTime.totalTime)}</p>
-      <ServerActionButton
-        className="border border-black max-w-max px-2 py-1"
-        fn={async () => {
-          'use server';
-          const response = await resumeSubmission(1, 1, 1, 1);
-          revalidatePath('/');
-        }}
-      >
-        Resume
-      </ServerActionButton>
+      <p>{timestamp2Clock(totalTime.totalTime)}</p>
+      <ResumeButton />
       <RestartButton />
-      <ul className="flex flex-col gap-2">
-        {submission.pauses.map((pause) => (
-          <li key={pause.id}>
-            <div className="flex gap-2">
-              <p>{new Date(pause.start_time).toLocaleDateString('en-us', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
-              <p>{pause.end_time}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <PausesList pauses={submission.pauses} />
     </div>
+  );
+}
+
+function StartButton() {
+  return (
+    <ServerActionButton
+      fn={async () => {
+        'use server';
+        const response = await startSubmission(1, 1, 1, 1);
+        revalidatePath('/');
+      }}
+    >
+      Start
+    </ServerActionButton>
+  );
+}
+
+function PauseButton() {
+  return (
+    <ServerActionButton
+      fn={async () => {
+        'use server';
+        const response = await pauseSubmission(1, 1, 1, 1);
+        revalidatePath('/');
+      }}
+    >
+      Pause
+    </ServerActionButton>
+  );
+}
+
+function ResumeButton() {
+  return (
+    <ServerActionButton
+      fn={async () => {
+        'use server';
+        const response = await resumeSubmission(1, 1, 1, 1);
+        revalidatePath('/');
+      }}
+    >
+      Resume
+    </ServerActionButton>
   );
 }
 

@@ -1,4 +1,4 @@
-export const convertToTimeString = (diff: number | null): string | null => {
+export const timestamp2Clock = (diff: number | null): string | null => {
   if (null === diff) {
     return null;
   }
@@ -20,3 +20,23 @@ export const timeString2Timestamp = (time: string | null): number | null => {
   return new Date(time).getTime();
 }
 
+/** NB Returns in Local Time */
+export const timestamp2TimeString = (
+  timestamp: string | null
+): string | null => {
+  if (!timestamp) {
+    return null;
+  }
+  return new Date(timestamp)
+    .toLocaleDateString(
+      'en-us',
+       {
+         year: 'numeric',
+         month: 'short',
+         day: 'numeric',
+         hour: '2-digit',
+         minute: '2-digit',
+         second: '2-digit'
+       }
+    );
+}

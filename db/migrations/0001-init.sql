@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS AppUser (
     salt VARCHAR(16) NOT NULL,
     display_name VARCHAR(255) NOT NULL,
     link VARCHAR(255),
-    join_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    join_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (username)
 );
 
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS AuthToken (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(255) NOT NULL,
-    expire_time TIMESTAMP NOT NULL,
+    expire_time TIMESTAMPTZ NOT NULL,
     FOREIGN KEY (user_id) REFERENCES AppUser(id) ON DELETE CASCADE
 );
 
@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS Submission (
     day SMALLINT NOT NULL,
     year SMALLINT NOT NULL,
     leaderboard_id INT NOT NULL,
-    start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    star_1_end_time TIMESTAMP,
-    star_2_end_time TIMESTAMP,
+    start_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    star_1_end_time TIMESTAMPTZ,
+    star_2_end_time TIMESTAMPTZ,
     score INT NOT NULL DEFAULT 0,
     language_id INT,
     link VARCHAR(255),
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS SubmissionPause (
     user_id INT NOT NULL,
     type VARCHAR(6) NOT NULL,
     parent_id INT,
-    time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id, day, year, leaderboard_id)
       REFERENCES Submission(user_id, day, year, leaderboard_id) ON DELETE CASCADE,

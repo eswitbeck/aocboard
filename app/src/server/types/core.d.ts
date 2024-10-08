@@ -38,9 +38,9 @@ type s_Submission = {
   day: number;
   year: number;
   leaderboard_id: number;
-  start_time: string;
-  star_1_end_time: string | null;
-  star_2_end_time: string | null;
+  start_time: Date;
+  star_1_end_time: Date | null;
+  star_2_end_time: Date | null;
   score: number;
   language: string | null;
   link: string | null;
@@ -55,5 +55,5 @@ type s_Pause = {
   user_id: number;
   parent_id: number | null;
   type: 'pause' | 'resume';
-  time: string;
+  time: Date;
 };

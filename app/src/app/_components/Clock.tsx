@@ -5,7 +5,9 @@ import {
   useRef
 } from 'react';
 
-import { convertToTimeString } from '@/shared/utils';
+import {
+  timestamp2Clock
+} from '@/shared/utils';
 
 export default function Clock ({
   startingDiff
@@ -31,7 +33,7 @@ export default function Clock ({
     return () => clearInterval(interval);
   }, []);
 
-  const timeDisplay = convertToTimeString(diff);
+  const timeDisplay = timestamp2Clock(diff);
 
   if (!timeDisplay) {
     return (

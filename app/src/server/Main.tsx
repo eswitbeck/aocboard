@@ -27,7 +27,7 @@ import {
 
 type TotalTime = {
   totalTime: number,
-  lastTimestamp?: number
+  lastTimestamp?: string
 }
 
 const getTotalTime = (
@@ -41,10 +41,13 @@ const getTotalTime = (
     submission.start_time,
     submission.star_1_end_time,
     submission.star_2_end_time
-  ].map(timeString2Timestamp);
-
+  ].map(s => s?.getTime());
+  
   for (const p of pauses) {
-    const time = timeString2Timestamp(p.time);
+    if (!p.id) {
+      continue;
+    }
+    const time = p.time.getTime();
     if (!time) {
       continue;
     }
@@ -100,7 +103,7 @@ const getTotalTime = (
     } else {
       return {
         totalTime,
-        lastTimestamp: start.time!
+        lastTimestamp: new Date(start.time!).toISOString()
       };
     }
   }
@@ -152,7 +155,7 @@ export const getSubmission = async (
       sp_submission_id: number,
       sp_parent_id: number | null,
       sp_type: 'pause' | 'resume',
-      sp_time: string
+      sp_time: Date
     }) => ({
       id: row.sp_id,
       day: row.day,
@@ -190,9 +193,7 @@ export const startSubmission = async (
 ): Promise<HTTPLike<Submission>> => {
   'use server';
   const time = new Date()
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
+    .toISOString();
 
   if (!userId) {
     return { status: 401 };
@@ -252,9 +253,7 @@ export const pauseSubmission = async (
   leaderboardId: number
 ): Promise<HTTPLike<{ time: number }>> => {
   const time = new Date()
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
+    .toISOString();
 
   if (!userId) {
     return { status: 401 };
@@ -307,9 +306,7 @@ export const resumeSubmission = async (
   leaderboardId: number
 ): Promise<HTTPLike<{ time: number }>> => {
   const time = new Date()
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
+    .toISOString();
 
   if (!userId) {
     return { status: 401 };

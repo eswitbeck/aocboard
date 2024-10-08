@@ -11,24 +11,35 @@ export const s_Submission2Submission = (
 ): Submission => {
   const pauseMap: Record<number, Pause> = {};
   for (const s_Pause of s_Pauses) {
+    if (null === s_Pause.id) {
+      continue;
+    }
+
     if (s_Pause.type === 'pause') {
       pauseMap[s_Pause.id] = {
         id: s_Pause.id,
-        start_time: timeString2Timestamp(s_Pause.time) as number,
+        start_time: s_Pause.time.toISOString(),
         end_time: null
       };
-    } else if (null === s_Pause.id) {
-      continue;
     } else {
       if (!Object.hasOwn(pauseMap, s_Pause.parent_id!)) {
         throw new Error('resume without pause');
       }
-      pauseMap[s_Pause.parent_id!].end_time = timeString2Timestamp(s_Pause.time) as number;
+      pauseMap[s_Pause.parent_id!].end_time = s_Pause.time.toISOString();
     }
   }
 
   const pauses: Pause[] = Object.values(pauseMap).sort(
-    (a, b) => a.start_time - b.start_time
+    (a, b) => {
+      if (!a.start_time) {
+        return -1;
+      }
+      if (!b.start_time) {
+        return 1;
+      }
+      return (timeString2Timestamp(a.start_time) as number) -
+        (timeString2Timestamp(b.start_time) as number)
+    }
   );
 
   return {
@@ -36,13 +47,13 @@ export const s_Submission2Submission = (
     day: s_Submission.day,
     year: s_Submission.year,
     leaderboard_id: s_Submission.leaderboard_id,
-    start_time: new Date(s_Submission.start_time).getTime(),
+    start_time: s_Submission.start_time.toISOString(),
     star_1_end_time: null === s_Submission.star_1_end_time
       ? null
-      : new Date(s_Submission.star_1_end_time).getTime(),
+      : s_Submission.star_1_end_time.toISOString(),
     star_2_end_time: null === s_Submission.star_2_end_time
       ? null
-      : new Date(s_Submission.star_2_end_time).getTime(),
+      : s_Submission.star_2_end_time.toISOString(),
     language: s_Submission.language,
     link: s_Submission.link,
     note: s_Submission.note,

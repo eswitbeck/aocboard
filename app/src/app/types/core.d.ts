@@ -32,9 +32,9 @@ type Submission = {
   day: number,
   year: number,
   leaderboard_id: number,
-  start_time: number,
-  star_1_end_time: number | null,
-  star_2_end_time: number | null,
+  start_time: string,
+  star_1_end_time: string | null,
+  star_2_end_time: string | null,
   language: string | null,
   link: string | null,
   note: string | null,
@@ -43,6 +43,6 @@ type Submission = {
 
 type Pause = {
   id: number,
-  start_time: number,
-  end_time: number | null
+  start_time: string,
+  end_time: string | null
 };
