@@ -42,7 +42,8 @@ type Submission = {
 };
 
 type Pause = {
-  id: number,
+  start_id: number,
+  end_id: number | null,
   start_time: string,
   end_time: string | null
 };

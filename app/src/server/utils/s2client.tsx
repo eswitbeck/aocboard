@@ -17,7 +17,8 @@ export const s_Submission2Submission = (
 
     if (s_Pause.type === 'pause') {
       pauseMap[s_Pause.id] = {
-        id: s_Pause.id,
+        start_id: s_Pause.id,
+        end_id: null,
         start_time: s_Pause.time.toISOString(),
         end_time: null
       };
@@ -26,6 +27,7 @@ export const s_Submission2Submission = (
         throw new Error('resume without pause');
       }
       pauseMap[s_Pause.parent_id!].end_time = s_Pause.time.toISOString();
+      pauseMap[s_Pause.parent_id!].end_id = s_Pause.id;
     }
   }
 

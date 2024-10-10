@@ -1,29 +1,83 @@
 'use client'
+import {
+  useState,
+  useEffect
+} from 'react';
 
-import { timestamp2TimeString } from '@/shared/utils';
+import {
+  timestamp2TimeString,
+  timestamp2Timestamp
+} from '@/shared/utils';
 
 export default function PausesList({
   pauses,
   start_time,
+  updatePause
 }: {
   start_time: string,
-  pauses: Pause[]
+  pauses: Pause[],
+  updatePause: (
+    userId: number | null,
+    pauseId: number,
+    time: string
+  ) => void
 }) {
+  const [pauseTimes, setPauseTimes] = useState<Pause[]>([]);
+  const [start, setStart] = useState<string>('');
+
+  useEffect(() => {
+    setPauseTimes(
+      pauses.map((pause) => {
+        return {
+          ...pause,
+          start_time: timestamp2Timestamp(pause.start_time) as string,
+          end_time: timestamp2Timestamp(pause.end_time)
+        }
+      })
+    );
+
+    setStart(timestamp2Timestamp(start_time) as string);
+  }, [pauses, start_time]);
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2">
         <p>Start Time</p>
-        <p>{timestamp2TimeString(start_time)}</p>
+        <input
+          type="datetime-local"
+          value={start}
+          className="w-64"
+        />
       </div>
+      <p>Pause Times</p>
       <ul className="flex flex-col gap-2">
-        {pauses.map((pause) => (
-          <li key={pause.id}>
+        {pauseTimes.map((p, i) => (
+          <li key={i}>
             <div className="flex gap-2">
-              <p>{timestamp2TimeString(pause.start_time)}</p>
-              <p>
-                {pause?.end_time &&
-                  timestamp2TimeString(pause.end_time)}
-              </p>
+              <input
+                type="datetime-local"
+                value={p.start_time}
+                onChange={(e) => {
+                  updatePause(
+                    1,
+                    p.start_id,
+                    e.target.value
+                  );
+                }}
+              />
+              {p.end_time && (
+                <input
+                  type="datetime-local"
+                  value={p.end_time}
+                  onChange={(e) => {
+                    updatePause(
+                      1,
+                      p.end_id as number,
+                      e.target.value
+                    );
+                  }}
+                />
+              )}
             </div>
           </li>
         ))}
@@ -31,4 +85,3 @@ export default function PausesList({
     </div>
   );
 }
-

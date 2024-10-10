@@ -11,7 +11,8 @@ import {
   pauseSubmission,
   resumeSubmission,
   restartSubmission,
-  completeSubmission
+  completeSubmission,
+  updatePause
 } from '@/server/Main';
 
 import Clock from '@/app/_components/Clock';
@@ -86,6 +87,11 @@ function ActivePage({
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
+        updatePause={async (userId, pauseId, time) => {
+          'use server';
+          updatePause(userId, pauseId, time);
+          revalidatePath('/');
+        }}
       />
     </div>
   );
@@ -109,6 +115,11 @@ function PausedPage({
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
+        updatePause={async (userId, pauseId, time) => {
+          'use server';
+          updatePause(userId, pauseId, time);
+          revalidatePath('/');
+        }}
       />
     </div>
   );
@@ -147,6 +158,11 @@ function CompletePage({
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
+        updatePause={async (userId, pauseId, time) => {
+          'use server';
+          updatePause(userId, pauseId, time);
+          revalidatePath('/');
+        }}
       />
     </div>
   );

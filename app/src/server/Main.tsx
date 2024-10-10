@@ -90,7 +90,7 @@ const getTotalTime = (
 
     if (start.type !== 'resume' ||
       (end && end.type !== 'pause')) {
-      throw new Error('invalid pause/resume sequence');
+      throw new Error('getTotalTime -- invalid pause/resume sequence');
     }
 
     if (end) {
@@ -136,11 +136,13 @@ export const getSubmission = async (
        WHERE s.user_id = $1
         AND s.day = $2
         AND s.year = $3
-        AND s.leaderboard_id = $4;`,
+        AND s.leaderboard_id = $4
+       ORDER BY sp.id ASC;`,
       [userId, day, year, leaderboardId]
     );
 
     const s_Submission = rows[0];
+
     const s_Pauses = rows.map((row: {
       day: number,
       year: number,
@@ -176,7 +178,8 @@ export const getSubmission = async (
       }
     };
   } catch (error) {
-    return { status: 500, error };
+    // @ts-ignore
+    return { status: 500, error: error.message };
   }
 }
 
@@ -237,7 +240,8 @@ export const startSubmission = async (
   try {
     return await withTransaction(fn);
   } catch (error) {
-    return { status: 500, error };
+    // @ts-ignore
+    return { status: 500, error: error.message };
   }
 }
 
@@ -315,7 +319,7 @@ export const resumeSubmission = async (
         AND day = $2
         AND year = $3
         AND leaderboard_id = $4
-       ORDER BY time DESC, type ASC
+       ORDER BY id ASC
        LIMIT 1;`,
       [userId, day, year, leaderboardId]
     );
@@ -343,7 +347,8 @@ export const resumeSubmission = async (
   try {
     return await withTransaction(fn);
   } catch (error) {
-    return { status: 500, error };
+    // @ts-ignore
+    return { status: 500, error: error.message };
   }
 }
 
@@ -403,7 +408,8 @@ export const completeSubmission = async (
   try {
     return await withTransaction(fn);
   } catch (error) {
-    return { status: 500, error };
+    // @ts-ignore
+    return { status: 500, error: error.message };
   }
 }
 
@@ -437,12 +443,56 @@ export const restartSubmission = async (
       status: 204,
     };
   } catch (error) {
-    return { status: 500, error };
+    // @ts-ignore
+    return { status: 500, error: error.message };
   }
 }
 
 // edit submission
+
 // update pause
+export const updatePause = async (
+  userId: number | null,
+  pauseId: number,
+  time: string
+): Promise<HTTPLike<{ time: number }>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+ try {
+   const pool = getPool();
+
+   const { rows: [ownerId] } = await pool.query(
+     `SELECT user_id
+      FROM SubmissionPause
+      WHERE id = $1;`,
+     [pauseId]
+   );
+
+   if (ownerId.user_id !== userId) {
+     return { status: 403 };
+   }
+
+   const { rows: [s_Pause] } = await pool.query(
+     `UPDATE SubmissionPause
+      SET time = $1
+      WHERE id = $2
+      RETURNING time;`,
+     [time, pauseId]
+   );
+
+   return {
+     status: 200,
+     body: {
+       data: s_Pause
+     }
+   };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
 
 // add language to list
 

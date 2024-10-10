@@ -40,3 +40,25 @@ export const timestamp2TimeString = (
        }
     );
 }
+
+/** converts timestamp to local time */
+export const timestamp2Timestamp = (time: string | null): string | null => {
+  if (!time) {
+    return null;
+  }
+  return new Date(time)
+    .toLocaleDateString(
+      'en-us',
+       {
+         year: 'numeric',
+         month: '2-digit',
+         day: '2-digit',
+         hour: '2-digit',
+         minute: '2-digit',
+         second: '2-digit'
+       }
+    ).replace(
+      /(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+) (AM|PM)/,
+      '$3-$1-$2T$4:$5:$6'
+    );
+}
