@@ -461,10 +461,10 @@ export const updatePause = async (
     return { status: 401 };
   }
 
- try {
-   const pool = getPool();
+ const client = await getClient();
 
-   const { rows: [existing] } = await pool.query(
+ const fn = async (client: pg.PoolClient) => {
+   const { rows: [existing] } = await client.query(
      `SELECT
        s.start_time,
        s.star_1_end_time,
@@ -488,7 +488,7 @@ export const updatePause = async (
      return { status: 403 };
    }
 
-   const { rows: allPauses } = await pool.query(
+   const { rows: allPauses } = await client.query(
       `SELECT
         p.id, p.type, p.time
       FROM SubmissionPause orig_pause
@@ -516,6 +516,7 @@ export const updatePause = async (
      return { status: 400, error: 'invalid time' };
    }
 
+   // TODO simplify to that sorted business below
    const times = allPauses.map(p => p.time.getTime());
    times.unshift(existing.start_time.getTime());
 
@@ -574,7 +575,7 @@ export const updatePause = async (
      return { status: 400, error: 'invalid time' };
    }
 
-   const { rows: [s_Pause] } = await pool.query(
+   const { rows: [s_Pause] } = await client.query(
      `UPDATE SubmissionPause
       SET time = $1
       WHERE id = $2
@@ -588,6 +589,254 @@ export const updatePause = async (
        data: s_Pause
      }
    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
+
+const updateStartTime = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number,
+  time: string
+): Promise<HTTPLike<{ time: string }>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const updatingDate = new Date(time);
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [existing] } = await client.query(
+      `SELECT
+        s.start_time,
+        s.star_1_end_time,
+        sp.user_id,
+        sp.time as pause_time
+       FROM
+         Submission s
+       LEFT JOIN
+         SubmissionPause sp
+           ON sp.user_id = s.user_id
+           AND sp.day = s.day
+           AND sp.year = s.year
+           AND sp.leaderboard_id = s.leaderboard_id
+       WHERE s.user_id = $1
+         AND s.day = $2
+         AND s.year = $3
+         AND s.leaderboard_id = $4
+      ORDER BY sp.time ASC, sp.type ASC;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (!existing) {
+      return { status: 404, error: 'no submission' };
+    }
+
+    if (existing.user_id !== userId) {
+      return { status: 403 };
+    }
+
+    // time can't be after first pause
+    if (existing.pause_time && updatingDate.getTime() > existing.pause_time.getTime()) {
+      return { status: 400, error: 'invalid time' };
+    }
+
+    // time can't be in the future
+    if (updatingDate.getTime() > new Date().getTime()) {
+      return { status: 400, error: 'invalid time' };
+    }
+
+    // time can't be after star 1
+    if (existing.star_1_end_time &&
+        updatingDate.getTime() > existing.star_1_end_time.getTime()
+    ) {
+      return { status: 400, error: 'invalid time' };
+    }
+
+    const { rows: [s_Submission] } = await client.query(
+      `UPDATE Submission
+       SET start_time = $1
+       WHERE user_id = $2
+         AND day = $3
+         AND year = $4
+         AND leaderboard_id = $5
+       RETURNING start_time;`,
+      [time, userId, day, year, leaderboardId]
+    );
+
+    return {
+      status: 200,
+      body: {
+        data: { time: new Date(s_Submission.start_time).toISOString() }
+      }
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
+
+const updateStarTime = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number,
+  time: string,
+  star: 'star_1' | 'star_2'
+): Promise<HTTPLike<{ time: string }>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const updatingDate = new Date(time);
+
+  const fn = async (client: pg.PoolClient) => {
+    // get existing submission (start, star times)
+    // get all pauses
+
+    const { rows: existing } = await client.query(
+      `SELECT
+        s.start_time,
+        s.star_1_end_time,
+        s.star_2_end_time,
+        sp.user_id,
+        sp.time as pause_time
+       FROM
+         Submission s
+       LEFT JOIN
+         SubmissionPause sp
+           ON sp.user_id = s.user_id
+           AND sp.day = s.day
+           AND sp.year = s.year
+           AND sp.leaderboard_id = s.leaderboard_id
+       WHERE s.user_id = $1
+         AND s.day = $2
+         AND s.year = $3
+         AND s.leaderboard_id = $4
+      ORDER BY sp.time ASC, sp.type ASC;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    const submission = existing[0];
+
+    if (!submission) {
+      return { status: 404, error: 'no submission' };
+    }
+
+    if (submission.user_id !== userId) {
+      return { status: 403 };
+    }
+
+    // time can't be before start time
+    if (updatingDate.getTime() < submission.start_time.getTime()) {
+      return { status: 400, error: 'invalid time' };
+    }
+
+    const pauses = existing
+      .filter(row => row.pause_time)
+      .map(row => ({
+        time: row.pause_time,
+        type: 'pause'
+      }));
+
+    const times = [
+      submission.start_time,
+      ...(star === 'star_1' ? [submission.star_1_end_time] : []),
+      ...(star === 'star_2' ? [submission.star_2_end_time] : []),
+      ...pauses
+    ].map(t => t?.getTime())
+     .filter(t => t)
+     .sort((a, b) => a - b);
+
+    let bounds = {
+      lower: null,
+      upper: null
+    };
+
+    for (let i = 0; i < times.length; i++) {
+      const prevTime = times[i];
+      const nextTime = times?.[i + 1] ?? null;
+
+      if (prevTime > submission.start_time.getTime()) {
+        bounds.lower = prevTime;
+        bounds.upper = nextTime;
+        break;
+      }
+    }
+
+    switch (star) {
+      case 'star_1':
+        if (!submission.star_1_end_time) {
+          return { status: 400, error: 'star 1 not completed' };
+        }
+        if (updatingDate.getTime() < bounds.lower! ||
+            (bounds.upper && updatingDate.getTime() > bounds.upper)
+        ) {
+          return { status: 400, error: 'invalid time' };
+        }
+
+        const { rows: [s_Submission] } = await client.query(
+          `UPDATE Submission
+           SET star_1_end_time = $1
+           WHERE user_id = $2
+             AND day = $3
+             AND year = $4
+             AND leaderboard_id = $5
+           RETURNING star_1_end_time;`,
+          [time, userId, day, year, leaderboardId]
+        );
+
+        return {
+          status: 200,
+          body: {
+            data: { time: new Date(s_Submission.star_1_end_time).toISOString() }
+          }
+        };
+
+      case 'star_2':
+        if (!submission.star_1_end_time || !submission.star_2_end_time) {
+          return { status: 400, error: 'star 2 not completed' };
+        }
+
+        if (updatingDate.getTime() < bounds.lower! ||
+            (bounds.upper && updatingDate.getTime() > bounds.upper)
+        ) {
+          return { status: 400, error: 'invalid time' };
+        }
+
+        const { rows: [s_Submission2] } = await client.query(
+          `UPDATE Submission
+           SET star_2_end_time = $1
+           WHERE user_id = $2
+             AND day = $3
+             AND year = $4
+             AND leaderboard_id = $5
+           RETURNING star_2_end_time;`,
+          [time, userId, day, year, leaderboardId]
+        );
+
+        return {
+          status: 200,
+          body: {
+            data: { time: new Date(s_Submission2.star_2_end_time).toISOString() }
+          }
+        };
+    }
+  }
+
+  try {
+    return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
     return { status: 500, error: error.message };
