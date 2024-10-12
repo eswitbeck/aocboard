@@ -137,32 +137,34 @@ export const getSubmission = async (
         AND s.day = $2
         AND s.year = $3
         AND s.leaderboard_id = $4
-       ORDER BY sp.id ASC;`,
+       ORDER BY sp.time, sp.type ASC;`,
       [userId, day, year, leaderboardId]
     );
 
     const s_Submission = rows[0];
 
-    const s_Pauses = rows.map((row: {
-      day: number,
-      year: number,
-      leaderboard_id: number,
-      user_id: number,
-      sp_id: number,
-      sp_submission_id: number,
-      sp_parent_id: number | null,
-      sp_type: 'pause' | 'resume',
-      sp_time: Date
-    }) => ({
-      id: row.sp_id,
-      day: row.day,
-      year: row.year,
-      leaderboard_id: row.leaderboard_id,
-      user_id: row.user_id,
-      parent_id: row.sp_parent_id,
-      type: row.sp_type,
-      time: row.sp_time
-    }));
+    const s_Pauses = rows
+      .filter(row => row.sp_id)
+      .map((row: {
+        day: number,
+        year: number,
+        leaderboard_id: number,
+        user_id: number,
+        sp_id: number,
+        sp_submission_id: number,
+        sp_parent_id: number | null,
+        sp_type: 'pause' | 'resume',
+        sp_time: Date
+      }) => ({
+        id: row.sp_id,
+        day: row.day,
+        year: row.year,
+        leaderboard_id: row.leaderboard_id,
+        user_id: row.user_id,
+        parent_id: row.sp_parent_id,
+        type: row.sp_type,
+        time: row.sp_time
+      }));
 
     if (!s_Submission) {
       return { status: 404, error: 'no submission' };
@@ -266,7 +268,7 @@ export const pauseSubmission = async (
         AND day = $2
         AND year = $3
         AND leaderboard_id = $4
-       ORDER BY time DESC
+       ORDER BY time DESC, type ASC
        LIMIT 1;`,
       [userId, day, year, leaderboardId]
     );
@@ -319,7 +321,7 @@ export const resumeSubmission = async (
         AND day = $2
         AND year = $3
         AND leaderboard_id = $4
-       ORDER BY id ASC
+       ORDER BY time DESC, type ASC
        LIMIT 1;`,
       [userId, day, year, leaderboardId]
     );
@@ -450,7 +452,6 @@ export const restartSubmission = async (
 
 // edit submission
 
-// update pause
 export const updatePause = async (
   userId: number | null,
   pauseId: number,
@@ -463,15 +464,114 @@ export const updatePause = async (
  try {
    const pool = getPool();
 
-   const { rows: [ownerId] } = await pool.query(
-     `SELECT user_id
-      FROM SubmissionPause
-      WHERE id = $1;`,
+   const { rows: [existing] } = await pool.query(
+     `SELECT
+       s.start_time,
+       s.star_1_end_time,
+       s.star_2_end_time,
+       sp.user_id,
+       parent.time as parent_time,
+       sp.time as time
+      FROM
+        Submission s
+      RIGHT JOIN
+      SubmissionPause sp
+        USING(user_id, day, year, leaderboard_id)
+      LEFT JOIN
+        SubmissionPause parent
+          ON sp.parent_id = parent.id
+      WHERE sp.id = $1;`,
      [pauseId]
    );
 
-   if (ownerId.user_id !== userId) {
+   if (existing?.user_id !== userId) {
      return { status: 403 };
+   }
+
+   const { rows: allPauses } = await pool.query(
+      `SELECT
+        p.id, p.type, p.time
+      FROM SubmissionPause orig_pause
+      JOIN Submission s
+        ON orig_pause.user_id = s.user_id
+        AND orig_pause.day = s.day
+        AND orig_pause.year = s.year
+        AND orig_pause.leaderboard_id = s.leaderboard_id
+      LEFT JOIN SubmissionPause p
+        ON p.user_id = s.user_id
+        AND p.day = s.day
+        AND p.year = s.year
+        AND p.leaderboard_id = s.leaderboard_id
+      WHERE orig_pause.id = $1
+        AND (p.id IS NULL OR p.id <> $1)
+        AND (orig_pause.parent_id IS NULL OR p.id <> orig_pause.parent_id)
+      ORDER BY p.time ASC;`,
+     [pauseId]
+   );
+
+   const updatingDate = new Date(time);
+
+   // resume can't be before a parent pause
+   if (existing.parent_time && updatingDate.getTime() < existing.parent_time) {
+     return { status: 400, error: 'invalid time' };
+   }
+
+   const times = allPauses.map(p => p.time.getTime());
+   times.unshift(existing.start_time.getTime());
+
+   const [firstTime, secondTime] = [existing.star_1_end_time, existing.star_2_end_time]
+     .map(t => t?.getTime());
+
+   let insertedFirst = firstTime === null;
+   let insertedSecond = secondTime === null;
+   for (let i = 0; i < times.length - 1; i++) {
+     const prevTime = times[i];
+     const nextTime = times[i + 1];
+     if (!insertedFirst &&
+       prevTime < firstTime &&
+       (!nextTime || nextTime > firstTime)
+     ) {
+       times.splice(i + 1, 0, firstTime);
+     }
+     if (!insertedSecond &&
+       prevTime < secondTime &&
+       (!nextTime || nextTime > secondTime)
+     ) {
+       times.splice(i + 1, 0, secondTime);
+     }
+   }
+
+   const bounds = {
+     lower: null,
+     upper: null
+   };
+
+   for (let i = 0; i < times.length; i++) {
+     const prevTime = times[i];
+     const nextTime = times?.[i + 1] ?? null;
+
+     // time can't be before start time
+     if (prevTime > existing.time.getTime()) {
+       return { status: 400, error: 'invalid time' };
+     }
+
+     if (!nextTime || nextTime > existing.time.getTime()) {
+       bounds.lower = prevTime;
+       bounds.upper = nextTime;
+       break;
+     }
+   }
+
+   if (updatingDate.getTime() < bounds.lower! ||
+       (bounds.upper && updatingDate.getTime() > bounds.upper)
+   ) {
+     // time can't move outside of bounding pauses/starts/stars
+     return { status: 400, error: 'invalid time' };
+   }
+
+   // time can't be in the future
+   if (updatingDate.getTime() > new Date().getTime()) {
+     return { status: 400, error: 'invalid time' };
    }
 
    const { rows: [s_Pause] } = await pool.query(

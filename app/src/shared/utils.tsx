@@ -55,10 +55,11 @@ export const timestamp2Timestamp = (time: string | null): string | null => {
          day: '2-digit',
          hour: '2-digit',
          minute: '2-digit',
-         second: '2-digit'
+         second: '2-digit',
+         hour12: false
        }
     ).replace(
-      /(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+) (AM|PM)/,
+      /(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+)/,
       '$3-$1-$2T$4:$5:$6'
     );
 }

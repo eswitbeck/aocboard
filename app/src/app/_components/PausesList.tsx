@@ -1,4 +1,6 @@
 'use client'
+import { revalidatePath } from 'next/cache';
+
 import {
   useState,
   useEffect
@@ -39,6 +41,9 @@ export default function PausesList({
     setStart(timestamp2Timestamp(start_time) as string);
   }, [pauses, start_time]);
 
+  const generateUTCString = (date: string): string =>
+    new Date(date).toISOString();
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2">
@@ -61,7 +66,7 @@ export default function PausesList({
                   updatePause(
                     1,
                     p.start_id,
-                    e.target.value
+                    generateUTCString(e.target.value)
                   );
                 }}
               />
@@ -73,7 +78,7 @@ export default function PausesList({
                     updatePause(
                       1,
                       p.end_id as number,
-                      e.target.value
+                      generateUTCString(e.target.value)
                     );
                   }}
                 />
