@@ -8,19 +8,24 @@ import {
 
 import {
   timestamp2TimeString,
-  timestamp2Timestamp
+  timestamp2Timestamp,
+  generateUTCString
 } from '@/shared/utils';
 
 export default function PausesList({
   pauses,
   start_time,
-  updatePause
+  updatePause,
+  updateStart
 }: {
   start_time: string,
   pauses: Pause[],
   updatePause: (
     userId: number | null,
     pauseId: number,
+    time: string
+  ) => void,
+  updateStart: (
     time: string
   ) => void
 }) {
@@ -41,9 +46,6 @@ export default function PausesList({
     setStart(timestamp2Timestamp(start_time) as string);
   }, [pauses, start_time]);
 
-  const generateUTCString = (date: string): string =>
-    new Date(date).toISOString();
-
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2">
@@ -52,6 +54,9 @@ export default function PausesList({
           type="datetime-local"
           value={start}
           className="w-64"
+          onChange={(e) => {
+            updateStart(generateUTCString(e.target.value));
+          }}
         />
       </div>
       <p>Pause Times</p>

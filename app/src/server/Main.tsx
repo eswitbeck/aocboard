@@ -599,7 +599,7 @@ export const updatePause = async (
   }
 }
 
-const updateStartTime = async (
+export const updateStartTime = async (
   userId: number | null,
   day: number,
   year: number,
@@ -617,7 +617,7 @@ const updateStartTime = async (
       `SELECT
         s.start_time,
         s.star_1_end_time,
-        sp.user_id,
+        s.user_id,
         sp.time as pause_time
        FROM
          Submission s
@@ -687,7 +687,7 @@ const updateStartTime = async (
   }
 }
 
-const updateStarTime = async (
+export const updateStarTime = async (
   userId: number | null,
   day: number,
   year: number,
@@ -702,15 +702,12 @@ const updateStarTime = async (
   const updatingDate = new Date(time);
 
   const fn = async (client: pg.PoolClient) => {
-    // get existing submission (start, star times)
-    // get all pauses
-
     const { rows: existing } = await client.query(
       `SELECT
         s.start_time,
         s.star_1_end_time,
         s.star_2_end_time,
-        sp.user_id,
+        s.user_id,
         sp.time as pause_time
        FROM
          Submission s
@@ -745,19 +742,18 @@ const updateStarTime = async (
 
     const pauses = existing
       .filter(row => row.pause_time)
-      .map(row => ({
-        time: row.pause_time,
-        type: 'pause'
-      }));
+      .map(row => row.pause_time);
 
     const times = [
       submission.start_time,
-      ...(star === 'star_1' ? [submission.star_1_end_time] : []),
-      ...(star === 'star_2' ? [submission.star_2_end_time] : []),
+      ...(star === 'star_1' ? [submission.star_2_end_time] : []),
+      ...(star === 'star_2' ? [submission.star_1_end_time] : []),
       ...pauses
-    ].map(t => t?.getTime())
+    ]
+    .map(t => t?.getTime())
      .filter(t => t)
      .sort((a, b) => a - b);
+
 
     let bounds = {
       lower: null,
@@ -768,13 +764,15 @@ const updateStarTime = async (
       const prevTime = times[i];
       const nextTime = times?.[i + 1] ?? null;
 
-      if (prevTime > submission.start_time.getTime()) {
+      if (nextTime > (star === 'star_1'
+                        ? submission.star_1_end_time.getTime()
+                        : submission.star_2_end_time.getTime())
+      ) {
         bounds.lower = prevTime;
         bounds.upper = nextTime;
         break;
       }
     }
-
     switch (star) {
       case 'star_1':
         if (!submission.star_1_end_time) {

@@ -12,7 +12,9 @@ import {
   resumeSubmission,
   restartSubmission,
   completeSubmission,
-  updatePause
+  updatePause,
+  updateStartTime,
+  updateStarTime
 } from '@/server/Main';
 
 import Clock from '@/app/_components/Clock';
@@ -83,13 +85,31 @@ function ActivePage({
       <PauseButton />
       <RestartButton />
       <GetStarButton />
-      <Stars submission={submission} />
+      <Stars
+        submission={submission}
+        updateStar={async (time, star) => {
+          'use server';
+          updateStarTime(1, 1, 1, 1, time, star);
+          revalidatePath('/');
+        }}
+      />
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
         updatePause={async (userId, pauseId, time) => {
           'use server';
           updatePause(userId, pauseId, time);
+          revalidatePath('/');
+        }}
+        updateStart={async (time) => {
+          'use server';
+          updateStartTime(
+            1, // userid
+            1, // dayid
+            1, // yearid
+            1, // leaderboardid
+            time
+          );
           revalidatePath('/');
         }}
       />
@@ -111,13 +131,31 @@ function PausedPage({
       <p>{timestamp2Clock(totalTime.totalTime)}</p>
       <ResumeButton />
       <RestartButton />
-      <Stars submission={submission} />
+      <Stars
+        submission={submission}
+        updateStar={async (time, star) => {
+          'use server';
+          updateStarTime(1, 1, 1, 1, time, star);
+          revalidatePath('/');
+        }}
+      />
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
         updatePause={async (userId, pauseId, time) => {
           'use server';
           updatePause(userId, pauseId, time);
+          revalidatePath('/');
+        }}
+        updateStart={async (time) => {
+          'use server';
+          updateStartTime(
+            1, // userid
+            1, // dayid
+            1, // yearid
+            1, // leaderboardid
+            time
+          );
           revalidatePath('/');
         }}
       />
@@ -154,13 +192,31 @@ function CompletePage({
       <p>Complete!</p>
       <p>{timestamp2Clock(totalTime.totalTime)}</p>
       <RestartButton />
-      <Stars submission={submission} />
+      <Stars
+        submission={submission}
+        updateStar={async (time, star) => {
+          'use server';
+          updateStarTime(1, 1, 1, 1, time, star);
+          revalidatePath('/');
+        }}
+      />
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
         updatePause={async (userId, pauseId, time) => {
           'use server';
           updatePause(userId, pauseId, time);
+          revalidatePath('/');
+        }}
+        updateStart={async (time) => {
+          'use server';
+          updateStartTime(
+            1, // userid
+            1, // dayid
+            1, // yearid
+            1, // leaderboardid
+            time
+          );
           revalidatePath('/');
         }}
       />

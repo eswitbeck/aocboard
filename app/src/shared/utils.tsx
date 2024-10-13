@@ -63,3 +63,6 @@ export const timestamp2Timestamp = (time: string | null): string | null => {
       '$3-$1-$2T$4:$5:$6'
     );
 }
+
+export const generateUTCString = (date: string): string =>
+    new Date(date).toISOString();
