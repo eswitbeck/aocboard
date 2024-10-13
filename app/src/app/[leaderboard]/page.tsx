@@ -1,10 +1,29 @@
 import Link from 'next/link';
 
-export default function Page({
+import {
+  getUsersByLeaderboard,
+  getLeaderboardInfo
+} from '@/server/Main';
+
+export default async function Page({
   params: { leaderboard }
 }: {
   params: { leaderboard: number }
 }) {
+  const userId = 1; // TODO
+
+  const users = await getUsersByLeaderboard(
+    userId,
+    leaderboard
+  );
+  const leaderboardInfo = await getLeaderboardInfo(
+    userId,
+    leaderboard
+  );
+
+  console.log(users);
+  console.log(leaderboardInfo);
+
   const years = Array.from(
     { length: new Date().getFullYear() - 2015 + 1 },
     (_, i) => i + 2015
@@ -18,7 +37,7 @@ export default function Page({
   );
 }
 
-export function Year({
+function Year({
   year,
   leaderboard
 }: {

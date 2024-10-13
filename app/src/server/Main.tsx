@@ -982,8 +982,162 @@ export const updateSubmission = async (
   }
 }
 
+type LeaderboardUserMap = {
+  [id: number]: {
+    display_name: string,
+    score: number,
+    link: string
+  }
+}
+export const getUsersByLeaderboard = async (
+  userId: number | null,
+  leaderboardId: number
+): Promise<HTTPLike<LeaderboardUserMap>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: users } = await pool.query(
+      `SELECT
+        u.id,
+        u.display_name,
+        u.link
+        -- TODO aggregate score from years/days
+       FROM AppUser u
+       JOIN UserLeaderBoard lu
+         ON lu.user_id = u.id
+       WHERE lu.leaderboard_id = $1;`,
+      [leaderboardId]
+    );
+
+    const leaderboardUserMap: LeaderboardUserMap = {};
+    for (const user of users) {
+      leaderboardUserMap[user.id] = {
+        display_name: user.display_name,
+        score: 0,
+        link: user.link
+      };
+    }
+
+    if (!Object.keys(leaderboardUserMap).includes(userId.toString())) {
+      return { status: 403 };
+    }
+
+    return {
+      status: 200,
+      body: {
+        data: leaderboardUserMap
+      }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
+
+type LeaderboardInfo = {
+  [year: number]: {
+    [day: number]: {
+      user_id: number,
+      start_time: string,
+      star_1_end_time: string | null,
+      star_2_end_time: string | null,
+      total_time: TotalTime,
+      link: string | null,
+      note: string | null
+    }[]
+  }
+}
+export const getLeaderboardInfo = async (
+  userId: number | null,
+  leaderboardId: number
+): Promise<HTTPLike<LeaderboardInfo>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: submissions } = await pool.query(
+      `SELECT
+        s.*,
+        sp.id as sp_id,
+        sp.parent_id as sp_parent_id,
+        sp.type as sp_type,
+        sp.time as sp_time
+       FROM Submission s
+       LEFT JOIN SubmissionPause sp
+         USING(user_id, day, year, leaderboard_id)
+       WHERE s.leaderboard_id = $1
+       ORDER BY s.year ASC, s.day ASC, s.user_id ASC;`,
+      [leaderboardId]
+    );
+
+    const processedSubmissions = {} as {
+      [key: string]: {
+        submission: s_Submission,
+        pauses: s_Pause[]
+      }
+    };
+
+    for (const submission of submissions) {
+      const { user_id, day, year } = submission;
+      const key = `${user_id}-${day}-${year}`;
+      if (!processedSubmissions[key]) {
+        processedSubmissions[key] = {
+          submission,
+          pauses: []
+        };
+      }
+      if (submission.sp_id) {
+        processedSubmissions[key].pauses.push({
+          id: submission.sp_id,
+          day: submission.day,
+          year: submission.year,
+          leaderboard_id: submission.leaderboard_id,
+          user_id: submission.user_id,
+          parent_id: submission.sp_parent_id,
+          type: submission.sp_type,
+          time: submission.sp_time
+        });
+      }
+    }
 
 
+    const leaderboardInfo: LeaderboardInfo = {};
+    for (const key in processedSubmissions) {
+      const { submission, pauses } = processedSubmissions[key];
+      const { user_id, day, year } = submission;
+      if (!leaderboardInfo[year]) {
+        leaderboardInfo[year] = {};
+      }
+      if (!leaderboardInfo[year][day]) {
+        leaderboardInfo[year][day] = [];
+      }
+      leaderboardInfo[year][day].push({
+        user_id,
+        start_time: submission.start_time.toISOString(),
+        star_1_end_time: submission.star_1_end_time?.toISOString() ?? null,
+        star_2_end_time: submission.star_2_end_time?.toISOString() ?? null,
+        total_time: getTotalTime(submission, pauses),
+        link: submission.link,
+        note: submission.note
+      });
+    }
+
+    return {
+      status: 200,
+      body: {
+        data: leaderboardInfo
+      }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
 
 // add language to list
 
