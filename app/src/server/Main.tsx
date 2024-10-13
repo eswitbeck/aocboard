@@ -29,6 +29,7 @@ const getTotalTime = (
   submission: s_Submission,
   pauses: s_Pause[]
 ): TotalTime => {
+  console.log('getTotalTime', submission, pauses);
   const startToStar1 = [];
   const star1ToStar2 = [];
 
@@ -982,13 +983,6 @@ export const updateSubmission = async (
   }
 }
 
-type LeaderboardUserMap = {
-  [id: number]: {
-    display_name: string,
-    score: number,
-    link: string
-  }
-}
 export const getUsersByLeaderboard = async (
   userId: number | null,
   leaderboardId: number
@@ -1037,19 +1031,6 @@ export const getUsersByLeaderboard = async (
   }
 }
 
-type LeaderboardInfo = {
-  [year: number]: {
-    [day: number]: {
-      user_id: number,
-      start_time: string,
-      star_1_end_time: string | null,
-      star_2_end_time: string | null,
-      total_time: TotalTime,
-      link: string | null,
-      note: string | null
-    }[]
-  }
-}
 export const getLeaderboardInfo = async (
   userId: number | null,
   leaderboardId: number
@@ -1063,6 +1044,7 @@ export const getLeaderboardInfo = async (
     const { rows: submissions } = await pool.query(
       `SELECT
         s.*,
+        l.name language,
         sp.id as sp_id,
         sp.parent_id as sp_parent_id,
         sp.type as sp_type,
@@ -1070,8 +1052,10 @@ export const getLeaderboardInfo = async (
        FROM Submission s
        LEFT JOIN SubmissionPause sp
          USING(user_id, day, year, leaderboard_id)
+       LEFT JOIN Language l
+         ON s.language_id = l.id
        WHERE s.leaderboard_id = $1
-       ORDER BY s.year ASC, s.day ASC, s.user_id ASC;`,
+       ORDER BY s.year ASC, s.day ASC, s.user_id ASC, sp.time ASC, sp.type ASC;`,
       [leaderboardId]
     );
 
@@ -1123,7 +1107,8 @@ export const getLeaderboardInfo = async (
         star_2_end_time: submission.star_2_end_time?.toISOString() ?? null,
         total_time: getTotalTime(submission, pauses),
         link: submission.link,
-        note: submission.note
+        note: submission.note,
+        language: submission.language
       });
     }
 

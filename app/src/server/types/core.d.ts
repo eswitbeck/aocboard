@@ -62,3 +62,26 @@ type TotalTime = {
   totalTime: number,
   lastTimestamp?: string
 }
+
+type LeaderboardUserMap = {
+  [id: number]: {
+    display_name: string,
+    score: number,
+    link: string
+  }
+}
+
+type LeaderboardInfo = {
+  [year: number]: {
+    [day: number]: {
+      user_id: number,
+      start_time: string,
+      star_1_end_time: string | null,
+      star_2_end_time: string | null,
+      total_time: TotalTime,
+      link: string | null,
+      note: string | null,
+      language: string | null
+    }[]
+  }
+}
