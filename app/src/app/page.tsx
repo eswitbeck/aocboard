@@ -14,10 +14,13 @@ import {
   completeSubmission,
   updatePause,
   updateStartTime,
-  updateStarTime
+  updateStarTime,
+  getLanguages,
+  updateLanguage
 } from '@/server/Main';
 
 import Clock from '@/app/_components/Clock';
+import LanguageInput from '@/app/_components/LanguageInput';
 import PausesList from '@/app/_components/PausesList';
 import ServerActionButton from '@/app/_components/ServerActionButton';
 import Stars from '@/app/_components/Stars';
@@ -66,7 +69,7 @@ export default async function Home() {
   );
 }
 
-function ActivePage({
+async function ActivePage({
   time,
   totalTime,
   submission
@@ -75,6 +78,11 @@ function ActivePage({
   totalTime: TotalTime,
   submission: Submission
 }) {
+  const languages = await getLanguages();
+  if (languages.status >= 400) {
+    return <ErrorPage error={languages.error} />;
+  }
+
   return (
     <div>
       <Clock
@@ -113,18 +121,29 @@ function ActivePage({
           revalidatePath('/');
         }}
       />
+      <LanguageInput
+        selectedLanguage={submission.language}
+        languages={languages.body!.data}
+        updateLanguage={async (id) => {
+          'use server';
+          updateLanguage(1, 1, 1, 1, id);
+          revalidatePath('/');
+        }}
+      />
     </div>
   );
 }
 
 
-function PausedPage({
+async function PausedPage({
   totalTime,
   submission
 }: {
   totalTime: TotalTime,
   submission: Submission
 }) {
+  const languages = await getLanguages();
+
   return (
     <div className="flex flex-col gap-2">
       <p>Paused</p>
@@ -159,6 +178,15 @@ function PausedPage({
           revalidatePath('/');
         }}
       />
+      <LanguageInput
+        selectedLanguage={submission.language}
+        languages={languages.body!.data}
+        updateLanguage={async (id) => {
+          'use server';
+          updateLanguage(1, 1, 1, 1, id);
+          revalidatePath('/');
+        }}
+      />
     </div>
   );
 }
@@ -180,13 +208,15 @@ function ErrorPage({ error }: { error: string }) {
   );
 }
 
-function CompletePage({
+async function CompletePage({
   totalTime,
   submission
 }: {
   totalTime: TotalTime,
   submission: Submission
 }) {
+  const languages = await getLanguages();
+
   return (
     <div>
       <p>Complete!</p>
@@ -217,6 +247,15 @@ function CompletePage({
             1, // leaderboardid
             time
           );
+          revalidatePath('/');
+        }}
+      />
+      <LanguageInput
+        selectedLanguage={submission.language}
+        languages={languages.body!.data}
+        updateLanguage={async (id) => {
+          'use server';
+          updateLanguage(1, 1, 1, 1, id);
           revalidatePath('/');
         }}
       />

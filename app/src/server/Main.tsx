@@ -841,6 +841,89 @@ export const updateStarTime = async (
   }
 }
 
+export const getLanguages = async (): Promise<HTTPLike<{ name: string, id: number }[]>> => {
+  try {
+    const { rows } = await getPool().query(
+      `SELECT name, id
+       FROM Language;`
+    );
+
+    return {
+      status: 200,
+      body: { data: rows }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
+
+export const updateLanguage = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number,
+  languageId: number
+): Promise<HTTPLike<{ id: number }>> => {
+
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [s_Submission] } = await client.query(
+      `SELECT
+        s.user_id 
+       FROM Submission s
+       WHERE s.user_id = $1
+         AND s.day = $2
+         AND s.year = $3
+         AND s.leaderboard_id = $4;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (!s_Submission) {
+      return { status: 404, error: 'no submission' };
+    }
+
+    if (s_Submission.user_id !== userId) {
+      return { status: 403 };
+    }
+
+    const { rows: [language] } = await client.query(
+      `UPDATE Submission
+       SET language_id = $1
+       WHERE user_id = $2
+         AND day = $3
+         AND year = $4
+         AND leaderboard_id = $5
+       RETURNING language_id;`,
+      [
+        languageId === 0 ? null : languageId,
+        userId,
+        day,
+        year,
+        leaderboardId
+      ]
+    );
+
+    return {
+      status: 200,
+      body: {
+        data: { id: language.language_id }
+      }
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
+
+
 // add language to list
 
 // update account (link, password??, display name)
