@@ -16,7 +16,8 @@ import {
   updateStartTime,
   updateStarTime,
   getLanguages,
-  updateLanguage
+  updateLanguage,
+  updateSubmission
 } from '@/server/Main';
 
 import Clock from '@/app/_components/Clock';
@@ -24,6 +25,7 @@ import LanguageInput from '@/app/_components/LanguageInput';
 import PausesList from '@/app/_components/PausesList';
 import ServerActionButton from '@/app/_components/ServerActionButton';
 import Stars from '@/app/_components/Stars';
+import SubmissionInputs from '@/app/_components/SubmissionInputs';
 
 export default async function Home() {
   const time = new Date();
@@ -130,6 +132,14 @@ async function ActivePage({
           revalidatePath('/');
         }}
       />
+      <SubmissionInputs
+        submission={submission}
+        updateSubmission={async (field, value) => {
+          'use server';
+          updateSubmission(1, 1, 1, 1, field, value);
+          revalidatePath('/');
+        }}
+      />
     </div>
   );
 }
@@ -184,6 +194,14 @@ async function PausedPage({
         updateLanguage={async (id) => {
           'use server';
           updateLanguage(1, 1, 1, 1, id);
+          revalidatePath('/');
+        }}
+      />
+      <SubmissionInputs
+        submission={submission}
+        updateSubmission={async (field, value) => {
+          'use server';
+          updateSubmission(1, 1, 1, 1, field, value);
           revalidatePath('/');
         }}
       />
@@ -256,6 +274,14 @@ async function CompletePage({
         updateLanguage={async (id) => {
           'use server';
           updateLanguage(1, 1, 1, 1, id);
+          revalidatePath('/');
+        }}
+      />
+      <SubmissionInputs
+        submission={submission}
+        updateSubmission={async (field, value) => {
+          'use server';
+          updateSubmission(1, 1, 1, 1, field, value);
           revalidatePath('/');
         }}
       />

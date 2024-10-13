@@ -873,7 +873,7 @@ export const updateLanguage = async (
   const fn = async (client: pg.PoolClient) => {
     const { rows: [s_Submission] } = await client.query(
       `SELECT
-        s.user_id 
+        s.user_id
        FROM Submission s
        WHERE s.user_id = $1
          AND s.day = $2
@@ -911,6 +911,65 @@ export const updateLanguage = async (
       status: 200,
       body: {
         data: { id: language.language_id }
+      }
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error.message };
+  }
+}
+
+export const updateSubmission = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  leaderboardId: number,
+  field: 'link' | 'note',
+  value: string
+): Promise<HTTPLike<{ value: string }>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [s_Submission] } = await client.query(
+      `SELECT
+        s.user_id
+       FROM Submission s
+       WHERE s.user_id = $1
+         AND s.day = $2
+         AND s.year = $3
+         AND s.leaderboard_id = $4;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (!s_Submission) {
+      return { status: 404, error: 'no submission' };
+    }
+
+    if (s_Submission.user_id !== userId) {
+      return { status: 403 };
+    }
+
+    const { rows: [submission] } = await client.query(
+      `UPDATE Submission
+       SET ${field} = $1
+       WHERE user_id = $2
+         AND day = $3
+         AND year = $4
+         AND leaderboard_id = $5
+       RETURNING ${field};`,
+      [value, userId, day, year, leaderboardId]
+    );
+
+    return {
+      status: 200,
+      body: {
+        data: { value: submission[field] }
       }
     };
   }
