@@ -29,7 +29,6 @@ const getTotalTime = (
   submission: s_Submission,
   pauses: s_Pause[]
 ): TotalTime => {
-  console.log('getTotalTime', submission, pauses);
   const startToStar1 = [];
   const star1ToStar2 = [];
 
