@@ -1100,8 +1100,7 @@ export const getLeaderboardInfo = async (
       if (!leaderboardInfo[year][day]) {
         leaderboardInfo[year][day] = [];
       }
-      leaderboardInfo[year][day].push({
-        user_id,
+      leaderboardInfo[year][day][user_id] = {
         start_time: submission.start_time.toISOString(),
         star_1_end_time: submission.star_1_end_time?.toISOString() ?? null,
         star_2_end_time: submission.star_2_end_time?.toISOString() ?? null,
@@ -1109,7 +1108,7 @@ export const getLeaderboardInfo = async (
         link: submission.link,
         note: submission.note,
         language: submission.language
-      });
+      };
     }
 
     return {

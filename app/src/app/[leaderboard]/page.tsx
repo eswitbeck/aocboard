@@ -110,9 +110,6 @@ function Year({
       <div className="flex flex-col gap-1">
         {days.map((day) => (
           <Link key={day} href={`/${leaderboard}/${year}/${day}`}>
-            <div key={day} className="w-full border-b-2 border-slate-200"> 
-              {day}
-            </div>
             <Day
               day={day}
               userMap={userMap}
@@ -134,24 +131,46 @@ function Day ({
   userMap: LeaderboardUserMap,
   dayInfo: LeaderboardInfo[number][number] | null
 }) {
-  if (null === dayInfo) {
-    return null;
-  }
   return (
     <div className="border-2 border-black rounded-lg p-4 flex flex-col gap-2 justify-center">
-      <div className="flex flex-col gap-1">
-        {dayInfo.map(d => (
-          <div key={d.user_id} className="flex flex-row gap-2">
-            <div>{userMap[d.user_id].display_name}</div>
-            <div>Start Time: {d.start_time}</div>
-            <div>Star 1 End Time: {d.star_1_end_time ?? 'Not Yet'}</div>
-            <div>Star 2 End Time: {d.star_2_end_time ?? 'Not Yet'}</div>
-            <div>Language: {d.language ?? 'N/A'}</div>
-            <div>Note: {d.note ?? 'N/A'}</div>
-            <div>Link: {d.link ? <a href={d.link}>Link</a> : 'N/A'}</div>
-          </div>
-        ))}
-      </div>
+      <h3 className="text-xl font-bold">Day {day}</h3>
+      {dayInfo && (
+        <div className="flex flex-col gap-1">
+          {Object.entries(userMap).map(([userid, user]) => {
+            const submission = dayInfo[parseInt(userid)];
+            const isComplete = submission?.star_2_end_time !== null;
+            return (null === submission)
+              ? (
+                <div key={userid} className="flex flex-row gap-2">
+                  <div>{user.display_name}</div>
+                  <div>No Submission</div>
+                </div>
+              )
+              : (
+                 <div key={userid} className="flex flex-row gap-2">
+                   <div>{user.display_name}</div>
+                   <div>{submission.link ? <a href={
+                      submission.link
+                    }>Link</a> : 'No Link'}</div>
+                    <div>Language: {submission.language}</div>
+                    <div>Time: {submission.total_time.totalTime}</div>
+                    <div>{isComplete ? 'Complete' : 'Incomplete'}</div>
+                  </div>
+              );
+            }
+          )}
+        </div>
+      )}
+      {!dayInfo && (
+        <div className="flex flex-col gap-1">
+          {Object.entries(userMap).map(([userid, user]) => (
+            <div key={userid} className="flex flex-row gap-2">
+              <div>{user.display_name}</div>
+              <div>No Submission</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
