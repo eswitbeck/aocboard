@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS AppUser (
     id SERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     encrypted_password VARCHAR(255) NOT NULL,
-    salt VARCHAR(16) NOT NULL,
     display_name VARCHAR(255) NOT NULL,
     link VARCHAR(255),
     join_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

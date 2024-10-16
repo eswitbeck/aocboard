@@ -1,5 +1,10 @@
 'use server';
 import pg from 'pg';
+import { headers, cookies } from 'next/headers';
+import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+
 
 import {
   timeString2Timestamp
@@ -14,10 +19,6 @@ import {
 import {
   s_Submission2Submission
 } from './utils/s2client';
-
-// get auth status
-
-// get main layout data
 
 // get dashboard data
 //  - get aggregate data
@@ -143,6 +144,10 @@ export const getSubmission = async (
 
     const s_Submission = rows[0];
 
+    if (userId !== s_Submission.user_id) {
+      return { status: 403 };
+    }
+
     const s_Pauses = rows
       .filter(row => row.sp_id)
       .map((row: {
@@ -200,6 +205,7 @@ export const startSubmission = async (
   }
 
   const fn = async (client: pg.PoolClient) => {
+    // check permissions
     await client.query(
       `INSERT INTO LeaderboardYear (leaderboard_id, year)
        VALUES ($1, $2)
@@ -277,6 +283,7 @@ export const pauseSubmission = async (
       return { status: 400, error: 'already paused' };
     }
 
+    // check permissions
     const { rows: [s_Pause] } = await client.query(
       `INSERT INTO SubmissionPause
        (user_id, day, year, leaderboard_id, type, time)
@@ -330,6 +337,7 @@ export const resumeSubmission = async (
       return { status: 400, error: 'already resumed' };
     }
 
+    // check permissions
     const { rows: [s_Pause] } = await client.query(
       `INSERT INTO SubmissionPause
        (user_id, day, year, leaderboard_id, type, time, parent_id)
@@ -388,6 +396,7 @@ export const completeSubmission = async (
 
     const { stage } = stageResult;
 
+    // check permissions
     const { rows: [s_Submission] } = await client.query(
       `UPDATE Submission
        SET ${stage}_end_time = $1
@@ -427,6 +436,7 @@ export const restartSubmission = async (
 
   try {
     const pool = getPool();
+    // check permissions
     const { rows: [s_Submission] } = await pool.query(
       `DELETE FROM Submission
        WHERE user_id = $1
@@ -1122,10 +1132,212 @@ export const getLeaderboardInfo = async (
   }
 }
 
+// refresh token
+export async function refreshAccessToken() {
+  const time = new Date();
+  const refreshToken = cookies().get('aocboardAuthorization');
+  if (!refreshToken) {
+    return { status: 401 };
+  }
+
+  const pool = getPool();
+  const { rows: [row] } = await pool.query(
+    `SELECT
+      user_id,
+      expire_time
+     FROM AuthToken
+     WHERE token = $1;`,
+    [refreshToken]
+  );
+
+  if (!row) {
+    return { status: 401 };
+  }
+
+  const { user_id, expire_time } = row;
+  if (time.getTime() > expire_time.getTime()) {
+    return { status: 401 };
+  }
+
+  const newAccessToken = generateAccessToken(user_id);
+  cookies().set('aocboardAccessToken', newAccessToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    expires: time.getTime() + 1000 * 60 * 15
+  });
+
+  return { status: 200 };
+}
+
+async function generateRefreshToken(userid: number): Promise<string> {
+  const time = new Date();
+  // Valid for 7 days
+  const expiration = new Date(time.getTime() + 1000 * 60 * 60 * 24 * 7);
+  const pool = getPool();
+  const token = uuidv4();
+  const { rows: [row] } = await pool.query(
+    `INSERT INTO AuthToken
+     (user_id, token, expire_time)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id)
+     UPDATE SET token = $2, expire_time = $3
+     RETURNING token;`,
+    [userid, token, expiration]
+  );
+
+  return row.token;
+}
+
+function generateAccessToken(userid: number): string {
+  const time = new Date();
+  // Valid for 15 minutes
+  const expiration = new Date(time.getTime() + 1000 * 60 * 15);
+  const object = {
+    userid,
+    expiration
+  };
+
+  const json = JSON.stringify(object);
+  const encryptedString = encrypt(json, process.env.ACCESS_TOKEN_SECRET!);
+  const base64String = btoa(encryptedString);
+  return base64String;
+}
+
+// should be on cookie, not token
+async function getUserIdFromAccessToken(
+  cookies: Record<string, string>,
+): Promise<number | null> {
+  const accessToken = cookies['aocboardAccessToken'];
+  if (!accessToken) {
+    return null;
+  }
+  const decodedString = atob(accessToken);
+  const decryptedString = decrypt(
+    decodedString,
+    process.env.ACCESS_TOKEN_SECRET!
+  );
+  const object = JSON.parse(decryptedString);
+  if (!Object.hasOwn(object, 'userid') || !Object.hasOwn(object, 'expiration')) {
+    return null;
+  }
+  const expiration = new Date(object.expiration);
+  const time = new Date();
+  if (time.getTime() > expiration.getTime()) {
+    return null;
+  }
+
+  return object.userid;
+}
+
+
+// ---------
+// -- gloria ad ChatGPT
+function encrypt(text: string, secretKey: string) {
+  const algorithm = 'aes-256-cbc';
+  const iv = crypto.randomBytes(16);
+
+  const cipher = crypto.createCipheriv(
+    algorithm,
+    Buffer.from(secretKey, 'hex'),
+    iv
+  );
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+
+  return iv.toString('hex') + ':' + encrypted;
+}
+
+function decrypt(encryptedText: string, secretKey: string) {
+  const algorithm = 'aes-256-cbc';
+  const [ivHex, encrypted] = encryptedText.split(':');
+
+  const iv = Buffer.from(ivHex, 'hex');
+  const decipher = crypto.createDecipheriv(
+    algorithm,
+    Buffer.from(secretKey, 'hex'),
+    iv
+  );
+
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+
+  return decrypted;
+}
+// -- gloria ad ChatGPT
+// ---------
+
+export async function login(username: string, password: string) {
+  const time = new Date();
+  const pool = getPool();
+  const { rows: [row] } = await pool.query(
+    `SELECT
+      id,
+      encrypted_password
+     FROM AppUser
+     WHERE username = $1;`,
+    [username]
+  );
+
+  if (!row) {
+    return { status: 401 };
+  }
+
+  const { id, password: hashedPassword } = row;
+  if (!bcrypt.compareSync(password, hashedPassword)) {
+    return { status: 401 };
+  }
+
+  const refreshToken = await generateRefreshToken(id);
+  const accessToken = generateAccessToken(id);
+
+  cookies().set('aocboardAuthorization', refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    expires: time.getTime() + 1000 * 60 * 60 * 24 * 7
+  });
+  cookies().set('aocboardAccessToken', accessToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    expires: time.getTime() + 1000 * 60 * 15
+  });
+}
+
+export async function logout() {
+  const time = new Date();
+  cookies().set('aocboardAuthorization', '', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    expires: time.getTime()
+  });
+  cookies().set('aocboardAccessToken', '', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    expires: time.getTime()
+  });
+}
+
+export async function registerUser(username: string, password: string) {
+  const pool = getPool();
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  await pool.query(
+    `INSERT INTO AppUser
+     (username, encrypted_password, display_name)
+     VALUES ($1, $2, $1);`,
+    [username, hashedPassword]
+  );
+
+  await login(username, password);
+
+  return { status: 201 };
+}
+
+
 // add language to list
 
 // update account (link, password??, display name)
 // get account data
-//
-// auth user (login) (send token)
-// auth middleware (check token)
