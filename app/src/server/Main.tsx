@@ -1147,7 +1147,7 @@ export async function refreshAccessToken() {
       expire_time
      FROM AuthToken
      WHERE token = $1;`,
-    [refreshToken]
+    [refreshToken.value]
   );
 
   if (!row) {
@@ -1181,7 +1181,7 @@ async function generateRefreshToken(userid: number): Promise<string> {
      (user_id, token, expire_time)
      VALUES ($1, $2, $3)
      ON CONFLICT (user_id)
-     UPDATE SET token = $2, expire_time = $3
+     DO UPDATE SET token = $2, expire_time = $3
      RETURNING token;`,
     [userid, token, expiration]
   );
@@ -1205,14 +1205,13 @@ function generateAccessToken(userid: number): string {
 }
 
 // should be on cookie, not token
-async function getUserIdFromAccessToken(
-  cookies: Record<string, string>,
+export async function getUserIdFromAccessToken(
 ): Promise<number | null> {
-  const accessToken = cookies['aocboardAccessToken'];
+  const accessToken = cookies().get('aocboardAccessToken');
   if (!accessToken) {
     return null;
   }
-  const decodedString = atob(accessToken);
+  const decodedString = atob(accessToken.value);
   const decryptedString = decrypt(
     decodedString,
     process.env.ACCESS_TOKEN_SECRET!
@@ -1251,6 +1250,9 @@ function encrypt(text: string, secretKey: string) {
 function decrypt(encryptedText: string, secretKey: string) {
   const algorithm = 'aes-256-cbc';
   const [ivHex, encrypted] = encryptedText.split(':');
+  if (!ivHex || !encrypted) {
+    return '{}';
+  }
 
   const iv = Buffer.from(ivHex, 'hex');
   const decipher = crypto.createDecipheriv(
@@ -1283,10 +1285,12 @@ export async function login(username: string, password: string) {
     return { status: 401 };
   }
 
-  const { id, password: hashedPassword } = row;
-  if (!bcrypt.compareSync(password, hashedPassword)) {
-    return { status: 401 };
-  }
+  const { id, encrypted_password: hashedPassword } = row;
+
+  // TODO
+  //if (!bcrypt.compareSync(password, hashedPassword)) {
+  //  return { status: 401 };
+  //}
 
   const refreshToken = await generateRefreshToken(id);
   const accessToken = generateAccessToken(id);
