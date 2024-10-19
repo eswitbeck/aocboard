@@ -7,6 +7,7 @@ import {
 } from '@/shared/utils';
 
 import {
+  getUserIdFromAccessToken,
   startSubmission,
   getSubmission,
   pauseSubmission,
@@ -24,6 +25,7 @@ import {
 import Clock from '@/app/_components/Clock';
 import LanguageInput from '@/app/_components/LanguageInput';
 import PausesList from '@/app/_components/PausesList';
+import RedirectLogin from '@/app/_components/RedirectLogin';
 import ServerActionButton from '@/app/_components/ServerActionButton';
 import Stars from '@/app/_components/Stars';
 import SubmissionInputs from '@/app/_components/SubmissionInputs';
@@ -46,9 +48,26 @@ export default async function SubmissionPage({
     redirect(`/${leaderboard}`);
   }
 
-  const response = await getSubmission(1, day, year, leaderboard);
+  const userId = await getUserIdFromAccessToken();
+
+  const response = await getSubmission(
+    userId,
+    day,
+    year,
+    leaderboard
+  );
+
+  if (response.status === 401) {
+    return <RedirectLogin />;
+  }
+
   if (response.status === 404) {
-    return <PreStartPage day={day} year={year} leaderboard={leaderboard} />;
+    return <PreStartPage
+      userId={userId}
+      day={day}
+      year={year}
+      leaderboard={leaderboard}
+    />;
   }
 
   if (response.status >= 400) {
@@ -56,6 +75,7 @@ export default async function SubmissionPage({
   }
 
   const submission = response.body?.data!;
+  // @ts-ignore -- dangerous ignore here
   const totalTime = response.body?.total_time!;
 
   const isComplete = submission.star_2_end_time !== null;
@@ -66,6 +86,7 @@ export default async function SubmissionPage({
       <CompletePage
         totalTime={totalTime}
         submission={submission}
+        userId={userId}
         day={day}
         year={year}
         leaderboard={leaderboard}
@@ -78,6 +99,7 @@ export default async function SubmissionPage({
         time={time}
         totalTime={totalTime}
         submission={submission}
+        userId={userId}
         day={day}
         year={year}
         leaderboard={leaderboard}
@@ -89,6 +111,7 @@ export default async function SubmissionPage({
     <PausedPage
       totalTime={totalTime}
       submission={submission}
+      userId={userId}
       day={day}
       year={year}
       leaderboard={leaderboard}
@@ -100,6 +123,7 @@ async function ActivePage({
   time,
   totalTime,
   submission,
+  userId,
   day,
   year,
   leaderboard
@@ -107,6 +131,7 @@ async function ActivePage({
   time: Date,
   totalTime: TotalTime,
   submission: Submission,
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -123,15 +148,30 @@ async function ActivePage({
           time.getTime() -
           new Date(totalTime.lastTimestamp!).getTime()}
       />
-      <PauseButton day={day} year={year} leaderboard={leaderboard} />
-      <RestartButton day={day} year={year} leaderboard={leaderboard} />
-      <GetStarButton day={day} year={year} leaderboard={leaderboard} />
+      <PauseButton
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+      />
+      <RestartButton
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+      />
+      <GetStarButton
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+      />
       <Stars
         submission={submission}
         updateStar={async (time, star) => {
           'use server';
           updateStarTime(
-            1,
+            userId,
             day,
             year,
             leaderboard,
@@ -152,7 +192,7 @@ async function ActivePage({
         updateStart={async (time) => {
           'use server';
           updateStartTime(
-            1, // userid
+            userId,
             day,
             year,
             leaderboard,
@@ -166,7 +206,7 @@ async function ActivePage({
         languages={languages.body!.data}
         updateLanguage={async (id) => {
           'use server';
-          updateLanguage(1, day, year, leaderboard, id);
+          updateLanguage(userId, day, year, leaderboard, id);
           revalidatePath('/');
         }}
       />
@@ -174,7 +214,7 @@ async function ActivePage({
         submission={submission}
         updateSubmission={async (field, value) => {
           'use server';
-          updateSubmission(1, day, year, leaderboard, field, value);
+          updateSubmission(userId, day, year, leaderboard, field, value);
           revalidatePath('/');
         }}
       />
@@ -186,12 +226,14 @@ async function ActivePage({
 async function PausedPage({
   totalTime,
   submission,
+  userId,
   day,
   year,
   leaderboard
 }: {
   totalTime: TotalTime,
   submission: Submission,
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -202,13 +244,23 @@ async function PausedPage({
     <div className="flex flex-col gap-2">
       <p>Paused</p>
       <p>{timestamp2Clock(totalTime.totalTime)}</p>
-      <ResumeButton day={day} year={year} leaderboard={leaderboard} />
-      <RestartButton day={day} year={year} leaderboard={leaderboard} />
+      <ResumeButton
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+      />
+      <RestartButton
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+      />
       <Stars
         submission={submission}
         updateStar={async (time, star) => {
           'use server';
-          updateStarTime(1, day, year, leaderboard, time, star);
+          updateStarTime(userId, day, year, leaderboard, time, star);
           revalidatePath('/');
         }}
       />
@@ -223,7 +275,7 @@ async function PausedPage({
         updateStart={async (time) => {
           'use server';
           updateStartTime(
-            1, // userid
+            userId,
             day,
             year,
             leaderboard,
@@ -237,7 +289,7 @@ async function PausedPage({
         languages={languages.body!.data}
         updateLanguage={async (id) => {
           'use server';
-          updateLanguage(1, day, year, leaderboard, id);
+          updateLanguage(userId, day, year, leaderboard, id);
           revalidatePath('/');
         }}
       />
@@ -245,7 +297,7 @@ async function PausedPage({
         submission={submission}
         updateSubmission={async (field, value) => {
           'use server';
-          updateSubmission(1, day, year, leaderboard, field, value);
+          updateSubmission(userId, day, year, leaderboard, field, value);
           revalidatePath('/');
         }}
       />
@@ -254,10 +306,12 @@ async function PausedPage({
 }
 
 function PreStartPage({
+  userId,
   day,
   year,
   leaderboard
 }: {
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -265,7 +319,12 @@ function PreStartPage({
   return (
     <div className="flex flex-col gap-2">
       <p>You haven't started yet</p>
-      <StartButton day={day} year={year} leaderboard={leaderboard} />
+      <StartButton
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+      />
     </div>
   );
 }
@@ -281,12 +340,14 @@ function ErrorPage({ error }: { error: string }) {
 async function CompletePage({
   totalTime,
   submission,
+  userId,
   day,
   year,
   leaderboard
 }: {
   totalTime: TotalTime,
   submission: Submission,
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -297,12 +358,17 @@ async function CompletePage({
     <div>
       <p>Complete!</p>
       <p>{timestamp2Clock(totalTime.totalTime)}</p>
-      <RestartButton day={day} year={year} leaderboard={leaderboard} />
+      <RestartButton
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+      />
       <Stars
         submission={submission}
         updateStar={async (time, star) => {
           'use server';
-          updateStarTime(1, day, year, leaderboard, time, star);
+          updateStarTime(userId, day, year, leaderboard, time, star);
           revalidatePath('/');
         }}
       />
@@ -317,7 +383,7 @@ async function CompletePage({
         updateStart={async (time) => {
           'use server';
           updateStartTime(
-            1, // userid
+            userId,
             day,
             year,
             leaderboard,
@@ -331,7 +397,7 @@ async function CompletePage({
         languages={languages.body!.data}
         updateLanguage={async (id) => {
           'use server';
-          updateLanguage(1, day, year, leaderboard, id);
+          updateLanguage(userId, day, year, leaderboard, id);
           revalidatePath('/');
         }}
       />
@@ -339,7 +405,7 @@ async function CompletePage({
         submission={submission}
         updateSubmission={async (field, value) => {
           'use server';
-          updateSubmission(1, day, year, leaderboard, field, value);
+          updateSubmission(userId, day, year, leaderboard, field, value);
           revalidatePath('/');
         }}
       />
@@ -348,10 +414,12 @@ async function CompletePage({
 }
 
 function StartButton({
+  userId,
   day,
   year,
   leaderboard
 }: {
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -360,7 +428,7 @@ function StartButton({
     <ServerActionButton
       fn={async () => {
         'use server';
-        const response = await startSubmission(1, day, year, leaderboard);
+        const response = await startSubmission(userId, day, year, leaderboard);
         revalidatePath('/');
       }}
     >
@@ -370,10 +438,12 @@ function StartButton({
 }
 
 function PauseButton({
+  userId,
   day,
   year,
   leaderboard
 }: {
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -382,7 +452,7 @@ function PauseButton({
     <ServerActionButton
       fn={async () => {
         'use server';
-        const response = await pauseSubmission(1, day, year, leaderboard);
+        const response = await pauseSubmission(userId, day, year, leaderboard);
         revalidatePath('/');
       }}
     >
@@ -392,10 +462,12 @@ function PauseButton({
 }
 
 function ResumeButton({
+  userId,
   day,
   year,
   leaderboard
 }: {
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -404,7 +476,7 @@ function ResumeButton({
     <ServerActionButton
       fn={async () => {
         'use server';
-        const response = await resumeSubmission(1, day, year, leaderboard);
+        const response = await resumeSubmission(userId, day, year, leaderboard);
         revalidatePath('/');
       }}
     >
@@ -414,10 +486,12 @@ function ResumeButton({
 }
 
 function GetStarButton({
+  userId,
   day,
   year,
   leaderboard
 }: {
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -426,7 +500,7 @@ function GetStarButton({
     <ServerActionButton
       fn={async () => {
         'use server';
-        const response = await completeSubmission(1, day, year, leaderboard);
+        const response = await completeSubmission(userId, day, year, leaderboard);
         revalidatePath('/');
       }}
     >
@@ -436,10 +510,12 @@ function GetStarButton({
 }
 
 function RestartButton({
+  userId,
   day,
   year,
   leaderboard
 }: {
+  userId: number | null,
   day: number,
   year: number,
   leaderboard: number
@@ -450,7 +526,7 @@ function RestartButton({
       <ServerActionButton
         fn={async () => {
           'use server';
-          const response = await restartSubmission(1, day, year, leaderboard);
+          const response = await restartSubmission(userId, day, year, leaderboard);
           revalidatePath('/');
         }}
       >

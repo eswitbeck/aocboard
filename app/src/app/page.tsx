@@ -1,4 +1,5 @@
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import {
   getUserIdFromAccessToken,
@@ -17,7 +18,7 @@ export default async function Page() {
   const userid = await getUserIdFromAccessToken();
   const isLoggedIn = userid !== null;
   if (!isLoggedIn) {
-    return <Login />;
+    redirect('/login');
   }
 
   const handleLogout = async () => {
@@ -33,13 +34,4 @@ export default async function Page() {
       <LogoutButton logout={handleLogout} />
     </div>
   );
-}
-
-function Login() {
-  const loginCallback = async (username: string, password: string) => {
-    'use server';
-    await login(username, password);
-    revalidatePath('/');
-  }
-  return <LoginButton login={loginCallback} />;
 }

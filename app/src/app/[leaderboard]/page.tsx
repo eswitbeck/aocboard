@@ -2,8 +2,11 @@ import Link from 'next/link';
 
 import {
   getUsersByLeaderboard,
-  getLeaderboardInfo
+  getLeaderboardInfo,
+  getUserIdFromAccessToken
 } from '@/server/Main';
+
+import RedirectLogin from '@/app/_components/RedirectLogin';
 
 type UsersArray = {
   id: number;
@@ -17,7 +20,7 @@ export default async function Page({
 }: {
   params: { leaderboard: number }
 }) {
-  const userId = 1; // TODO
+  const userId = await getUserIdFromAccessToken();
 
   const usersResp = await getUsersByLeaderboard(
     userId,
@@ -28,11 +31,17 @@ export default async function Page({
     leaderboard
   );
 
+  if (usersResp.status === 401 || leaderboardInfoResp.status === 401) {
+    return <RedirectLogin />
+  }
+
   if (usersResp.status !== 200|| leaderboardInfoResp.status !== 200) {
     return (
       <div className="flex flex-col gap-2">
         {usersResp?.error && <div>Users: {usersResp.error}</div>}
-        {leaderboardInfoResp?.error && <div>Leaderboard Info: {leaderboardInfoResp.error}</div>}
+        {leaderboardInfoResp?.error && (
+          <div>Leaderboard Info: {leaderboardInfoResp.error}</div>
+        )}
       </div>
     );
   }
