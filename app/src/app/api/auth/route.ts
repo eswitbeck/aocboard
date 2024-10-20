@@ -3,7 +3,6 @@ import {
 } from '@/server/Main';
 
 export async function GET(req: Request): Promise<Response> {
-
   const response = await refreshAccessToken();
 
   if (response.status !== 200) {

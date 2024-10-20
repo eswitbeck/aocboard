@@ -1191,7 +1191,6 @@ async function generateRefreshToken(userid: number): Promise<string> {
 
 function generateAccessToken(userid: number): string {
   const time = new Date();
-  // Valid for 15 minutes
   const expiration = new Date(time.getTime() + 1000 * 60 * 15);
   const object = {
     userid,
