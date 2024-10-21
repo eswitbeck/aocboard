@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 import {
   timestamp2Clock,
@@ -57,8 +58,23 @@ export default async function SubmissionPage({
     leaderboard
   );
 
+  console.log(response);
+
   if (response.status === 401) {
     return <RedirectLogin />;
+  }
+
+  if (response.status === 403) {
+    return (
+      <div>
+        <p>
+          Either you aren&apos;t on this leaderboard or it doesn&apos;t exist!
+        </p>
+        <Link href={`/`}>
+          Go home
+        </Link>
+      </div>
+    );
   }
 
   if (response.status === 404) {

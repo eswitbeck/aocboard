@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache';
 import { redirect as redirectFn } from 'next/navigation';
+import Link from 'next/link';
 
 import {
   getUserIdFromAccessToken,
@@ -43,5 +44,11 @@ function Login({
     await login(username, password);
     redirectFn(redirectLocation || '/');
   }
-  return <LoginButton login={loginCallback} />;
+  return (
+    <div className="flex flex-col gap-2 items-center">
+      <LoginButton login={loginCallback} />
+      <Link href="/create-account">Register</Link>
+    </div>
+  );
+
 }

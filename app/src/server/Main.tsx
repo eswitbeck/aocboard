@@ -120,6 +120,19 @@ export const getSubmission = async (
     return { status: 401 };
   }
   try {
+    const  { rows: [participant] } = await getPool().query(
+      `SELECT
+        lu.user_id
+       FROM UserLeaderBoard lu
+       WHERE lu.user_id = $1
+         AND lu.leaderboard_id = $2;`,
+      [userId, leaderboardId]
+    );
+
+    if (!participant) {
+      return { status: 403 };
+    }
+
     const { rows } = await getPool().query(
       `SELECT 
         s.user_id, s.day, s.year, s.leaderboard_id, s.start_time,
@@ -207,7 +220,19 @@ export const startSubmission = async (
   }
 
   const fn = async (client: pg.PoolClient) => {
-    // check permissions
+    const { rows: [participant] } = await client.query(
+      `SELECT
+        lu.user_id
+       FROM UserLeaderBoard lu
+       WHERE lu.user_id = $1
+         AND lu.leaderboard_id = $2;`,
+      [userId, leaderboardId]
+    );
+
+    if (!participant) {
+      return { status: 403 };
+    }
+
     await client.query(
       `INSERT INTO LeaderboardYear (leaderboard_id, year)
        VALUES ($1, $2)
@@ -1288,10 +1313,9 @@ export async function login(username: string, password: string) {
 
   const { id, encrypted_password: hashedPassword } = row;
 
-  // TODO
-  //if (!bcrypt.compareSync(password, hashedPassword)) {
-  //  return { status: 401 };
-  //}
+  if (!bcrypt.compareSync(password, hashedPassword)) {
+    return { status: 401 };
+  }
 
   const refreshToken = await generateRefreshToken(id);
   const accessToken = generateAccessToken(id);
@@ -1326,21 +1350,28 @@ export async function logout() {
   });
 }
 
-export async function registerUser(username: string, password: string) {
-  const pool = getPool();
-  const hashedPassword = bcrypt.hashSync(password, 10);
-  await pool.query(
-    `INSERT INTO AppUser
-     (username, encrypted_password, display_name)
-     VALUES ($1, $2, $1);`,
-    [username, hashedPassword]
-  );
+export async function registerUser(
+  username: string,
+  password: string
+) {
+  try {
+    const pool = getPool();
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    await pool.query(
+      `INSERT INTO AppUser
+       (username, encrypted_password, display_name)
+       VALUES ($1, $2, $1);`,
+      [username, hashedPassword]
+    );
 
-  await login(username, password);
+    await login(username, password);
 
-  return { status: 201 };
+    return { status: 201 };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
 }
-
 
 // add language to list
 

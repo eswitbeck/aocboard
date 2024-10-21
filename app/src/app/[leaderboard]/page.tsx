@@ -31,6 +31,23 @@ export default async function Page({
     leaderboard
   );
 
+  if (usersResp.status === 403 || leaderboardInfoResp.status === 403) {
+    return (
+      <div>
+        <p>
+          Either you don&apos;t have access to this leaderboard or the leaderboard
+          doesn&apos;t exist.
+        </p>
+        <Link
+          href="/"
+        >
+          Go back to the main page
+        </Link>
+      </div>
+    );
+  }
+
+
   if (usersResp.status === 401 || leaderboardInfoResp.status === 401) {
     return <RedirectLogin />
   }
