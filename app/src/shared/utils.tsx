@@ -66,3 +66,8 @@ export const timestamp2Timestamp = (time: string | null): string | null => {
 
 export const generateUTCString = (date: string): string =>
     new Date(date).toISOString();
+
+export const error2String = (error: Error): string => {
+  return `${error.name}: ${error.message}
+  ${error.stack}`;
+}

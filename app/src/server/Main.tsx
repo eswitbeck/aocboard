@@ -7,7 +7,8 @@ import bcrypt from 'bcrypt';
 
 
 import {
-  timeString2Timestamp
+  timeString2Timestamp,
+  error2String
 } from '@/shared/utils';
 
 import {
@@ -186,7 +187,7 @@ export const getSubmission = async (
     };
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -249,7 +250,7 @@ export const startSubmission = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -303,7 +304,7 @@ export const pauseSubmission = async (
   try {
     return await withTransaction(fn);
   } catch (error: any) {
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -358,7 +359,7 @@ export const resumeSubmission = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -420,7 +421,7 @@ export const completeSubmission = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -456,7 +457,7 @@ export const restartSubmission = async (
     };
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -605,7 +606,7 @@ export const updatePause = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -693,7 +694,7 @@ export const updateStartTime = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -847,7 +848,7 @@ export const updateStarTime = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -864,7 +865,7 @@ export const getLanguages = async (): Promise<HTTPLike<{ name: string, id: numbe
     };
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -929,7 +930,7 @@ export const updateLanguage = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -988,7 +989,7 @@ export const updateSubmission = async (
     return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -1036,7 +1037,7 @@ export const getUsersByLeaderboard = async (
     };
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
@@ -1128,7 +1129,7 @@ export const getLeaderboardInfo = async (
     };
   } catch (error) {
     // @ts-ignore
-    return { status: 500, error: error.message };
+    return { status: 500, error: error2String(error) };
   }
 }
 
