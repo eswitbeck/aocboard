@@ -145,6 +145,10 @@ export const getSubmission = async (
 
     const s_Submission = rows[0];
 
+    if (!s_Submission) {
+      return { status: 404, error: 'no submission' };
+    }
+
     if (userId !== s_Submission.user_id) {
       return { status: 403 };
     }
@@ -172,9 +176,6 @@ export const getSubmission = async (
         time: row.sp_time
       }));
 
-    if (!s_Submission) {
-      return { status: 404, error: 'no submission' };
-    }
 
     const clientSubmission = s_Submission2Submission(s_Submission, s_Pauses);
 
