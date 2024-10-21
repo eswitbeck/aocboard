@@ -1373,6 +1373,175 @@ export async function registerUser(
   }
 }
 
+export async function getAccountData(
+  userId: number | null
+): Promise<HTTPLike<{
+  username: string,
+  display_name: string,
+  link: string
+}>> {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: [row] } = await pool.query(
+      `SELECT
+        username,
+        display_name,
+        link
+       FROM AppUser
+       WHERE id = $1;`,
+      [userId]
+    );
+
+    return {
+      status: 200,
+      body: {
+        data: row
+      }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+export async function getLeaderboards(
+  userId: number | null
+): Promise<HTTPLike<{
+  id: number,
+  name: string,
+  paricipants: { id: number, display_name: string, username: string, link: string }[]
+}[]>> {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows } = await pool.query(
+      `SELECT
+        l.id,
+        l.name,
+        p.id as user_id,
+        p.display_name,
+        p.username,
+        p.link
+        FROM UserLeaderBoard ul
+        JOIN UserLeaderBoard ul2
+          ON ul.leaderboard_id = ul2.leaderboard_id
+        JOIN AppUser p
+          ON ul2.user_id = p.id
+        JOIN Leaderboard l
+          ON ul.leaderboard_id = l.id
+        WHERE ul.user_id = $1;`,
+      [userId]
+    );
+
+    const leaderboards = {} as {
+      [key: number]: {
+        id: number,
+        name: string,
+        participants: { id: number, display_name: string, username: string, link: string }[]
+      }
+    };
+
+    for (const row of rows) {
+      if (!leaderboards[row.id]) {
+        leaderboards[row.id] = {
+          id: row.id,
+          name: row.name,
+          participants: []
+        };
+      }
+      leaderboards[row.id].participants.push({
+        id: row.user_id,
+        display_name: row.display_name,
+        username: row.username,
+        link: row.link
+      });
+    }
+
+    return {
+      status: 200,
+      body: {
+        data: Object.values(leaderboards)
+      }
+    };
+
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+export async function createLeaderboard(
+  userId: number | null,
+): Promise<HTTPLike<{ id: number }>> {
+
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: [row] } = await pool.query(
+      `INSERT INTO Leaderboard
+       (name, owner_id)
+       VALUES ('New Leaderboard', $1)
+       RETURNING id;`,
+      [userId]
+    );
+
+    await pool.query(
+      `INSERT INTO UserLeaderBoard
+       (user_id, leaderboard_id)
+       VALUES ($1, $2);`,
+      [userId, row.id]
+    );
+
+    return {
+      status: 201,
+      body: {
+        data: row
+      }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+export const deleteLeaderboard = async (
+  userId: number | null,
+  leaderboardId: number
+): Promise<HTTPLike<{}>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    await pool.query(
+      `DELETE FROM Leaderboard
+       WHERE id = $1
+         AND owner_id = $2;`,
+      [leaderboardId, userId]
+    );
+
+    return {
+      status: 204
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+
+
 // add language to list
 
 // update account (link, password??, display name)
