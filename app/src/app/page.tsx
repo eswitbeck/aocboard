@@ -8,7 +8,8 @@ import {
   getAccountData,
   getLeaderboards,
   createLeaderboard as createLeaderboardApi,
-  deleteLeaderboard
+  deleteLeaderboard,
+  createInvitation
 } from '@/server/Main';
 
 import {
@@ -18,7 +19,8 @@ import {
 
 import {
   CreateLeaderboardButton,
-  DeleteLeaderboardButton
+  DeleteLeaderboardButton,
+  CreateInvitationButton
 } from '@/app/_components/LeaderboardButtons';
 
 export default async function Page() {
@@ -63,20 +65,49 @@ export default async function Page() {
       {/* TODO fix the typing here and horrid className runon */}
       {leaderboards && leaderboards.body && leaderboards.body.data.map(
         (leaderboard: any) => (
-          <Link href={`/${leaderboard.id}`} key={leaderboard.id}>
-            <div className="rounded-md flex gap-2 flex-col items-center justify-center cursor-pointer border-black border-2 p-4">
-              <p>{leaderboard.name}</p>
-              <p>Participants:</p>
-              {leaderboard.participants.map((participant: any) => (
-                <p key={participant.id}>{participant.display_name}</p>
-              ))}
-              <DeleteLeaderboardButton deleteLeaderboard={async () => {
-                'use server';
-                await deleteLeaderboard(userid, leaderboard.id);
-                revalidatePath('/');
-              }} />
-            </div>
-          </Link>
+          <div className="rounded-md flex gap-2 flex-col items-center justify-center cursor-pointer border-black border-2 p-4">
+            <a
+              href={`/${leaderboard.id}`}
+              className="hover:underline"
+            >
+              {leaderboard.name}
+            </a>
+            <p>Participants:</p>
+            {leaderboard.participants.map((participant: any) => (
+              <p key={participant.id}>{participant.display_name}</p>
+            ))}
+            {leaderboard.is_owner && (
+              <div className="flex gap-2">
+                <p>You are the owner of this leaderboard.</p>
+                <DeleteLeaderboardButton deleteLeaderboard={async () => {
+                  'use server';
+                  await deleteLeaderboard(userid, leaderboard.id);
+                  revalidatePath('/');
+                }} />
+                {leaderboard.invitation && (
+                  <>
+                    <p>Invitation link: {leaderboard.invitation.code}</p>
+                    <p>Expires at: {leaderboard.invitation.expires_at}</p>
+                  </>
+                )}
+                {!leaderboard.invitation && (
+                  <div className="flex gap-2">
+                    <p>No invitation link available.</p>
+                    <CreateInvitationButton createInvitation={async () => {
+                      'use server';
+                      revalidatePath('/');
+                      return await createInvitation(
+                        userid,
+                        leaderboard.id,
+                        // TODO let user set expiration
+                        'never'
+                      );
+                    }} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         )
       )}
     </div>

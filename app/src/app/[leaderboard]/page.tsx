@@ -175,11 +175,11 @@ function Day ({
               : (
                  <div key={userid} className="flex flex-row gap-2">
                    <div>{user.display_name}</div>
-                   <div>{submission.link ? <a href={
+                   <div>{submission?.link ? <a href={
                       submission.link
                     }>Link</a> : 'No Link'}</div>
-                    <div>Language: {submission.language}</div>
-                    <div>Time: {submission.total_time.totalTime}</div>
+                    <div>Language: {submission?.language}</div>
+                    <div>Time: {submission?.total_time.totalTime}</div>
                     <div>{isComplete ? 'Complete' : 'Incomplete'}</div>
                   </div>
               );

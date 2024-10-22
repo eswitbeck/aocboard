@@ -4,6 +4,7 @@ import { headers, cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
+import Hashids from 'hashids';
 
 
 import {
@@ -1413,7 +1414,9 @@ export async function getLeaderboards(
 ): Promise<HTTPLike<{
   id: number,
   name: string,
-  paricipants: { id: number, display_name: string, username: string, link: string }[]
+  is_owner: boolean,
+  participants: { id: number, display_name: string, username: string, link: string }[],
+  invitation: { code: string, expires_at: string } | null
 }[]>> {
   if (!userId) {
     return { status: 401 };
@@ -1425,6 +1428,9 @@ export async function getLeaderboards(
       `SELECT
         l.id,
         l.name,
+        i.code,
+        i.expires_at,
+        l.owner_id = $1 as is_owner,
         p.id as user_id,
         p.display_name,
         p.username,
@@ -1436,6 +1442,8 @@ export async function getLeaderboards(
           ON ul2.user_id = p.id
         JOIN Leaderboard l
           ON ul.leaderboard_id = l.id
+        LEFT JOIN Invitation i
+          ON l.id = i.leaderboard_id
         WHERE ul.user_id = $1;`,
       [userId]
     );
@@ -1444,6 +1452,8 @@ export async function getLeaderboards(
       [key: number]: {
         id: number,
         name: string,
+        is_owner: boolean,
+        invitation: { code: string, expires_at: string } | null
         participants: { id: number, display_name: string, username: string, link: string }[]
       }
     };
@@ -1453,6 +1463,13 @@ export async function getLeaderboards(
         leaderboards[row.id] = {
           id: row.id,
           name: row.name,
+          is_owner: row.is_owner,
+          invitation: row.code
+            ? {
+                code: row.code,
+                expires_at: row.expires_at.toISOString()
+              }
+            : null,
           participants: []
         };
       }
@@ -1539,6 +1556,164 @@ export const deleteLeaderboard = async (
     return { status: 500, error: error2String(error) };
   }
 }
+
+export const joinLeaderboard = async (
+  userId: number | null,
+  code: string
+): Promise<HTTPLike<number>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: [row] } = await pool.query(
+      `SELECT
+        l.id,
+        i.expires_at
+       FROM Invitation i
+       JOIN Leaderboard l
+         ON i.leaderboard_id = l.id
+       WHERE i.code = $1;`,
+      [code]
+    );
+
+    if (!row) {
+      return { status: 404 };
+    }
+
+    const { id, expires_at } = row;
+
+    if (new Date().getTime() > expires_at.getTime()) {
+      return { status: 403, error: 'invitation expired' };
+    }
+
+    const { rows: [leaderboardId] } = await pool.query(
+      `WITH upsert AS (
+        INSERT INTO UserLeaderBoard
+        (user_id, leaderboard_id)
+        VALUES ($1, $2)
+        ON CONFLICT (user_id, leaderboard_id)
+        DO NOTHING
+        RETURNING leaderboard_id
+      )
+      SELECT leaderboard_id FROM upsert
+      UNION ALL
+      SELECT leaderboard_id FROM UserLeaderBoard
+      WHERE user_id = $1 AND leaderboard_id = $2
+      LIMIT 1;`,
+      [userId, id]
+    );
+
+    return {
+      status: 200,
+      body: {
+        data: leaderboardId.leaderboard_id
+      }
+
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+export const leaveLeaderboard = async (
+  userId: number | null,
+  leaderboardId: number
+): Promise<HTTPLike<{}>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    await pool.query(
+      `DELETE FROM UserLeaderBoard
+       WHERE user_id = $1
+         AND leaderboard_id = $2;`,
+      [userId, leaderboardId]
+    );
+
+    return {
+      status: 204
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+// it's not secret, it's just a salt
+const HASHID_SALT = 'aocboard!';
+
+export const createInvitation = async (
+  userId: number | null,
+  leaderboardId: number,
+  expiresAt: '1 day' | '1 week' | '1 month' | '1 year' | 'never'
+): Promise<HTTPLike<{ code: string }>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [leaderboard] } = await client.query(
+      `SELECT
+        owner_id
+       FROM Leaderboard
+       WHERE id = $1;`,
+      [leaderboardId]
+    );
+
+    if (!leaderboard) {
+      return { status: 404 };
+    }
+
+    if (leaderboard.owner_id !== userId) {
+      return { status: 403 };
+    }
+
+    const hashids = new Hashids(HASHID_SALT, 7);
+
+    const code = hashids.encode(leaderboardId);
+
+    const expiration = {
+      '1 day': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24),
+      '1 week': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 7),
+      '1 month': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 30),
+      '1 year': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365),
+      'never': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365 * 100)
+    }[expiresAt]();
+
+    await client.query(
+      `INSERT INTO Invitation
+       (code, expires_at, leaderboard_id)
+       VALUES ($1, $2, $3)
+       RETURNING code;`,
+      [code, expiration, leaderboardId]
+    );
+
+    return {
+      status: 201,
+      body: {
+        data: { code }
+      }
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
 
 
 
