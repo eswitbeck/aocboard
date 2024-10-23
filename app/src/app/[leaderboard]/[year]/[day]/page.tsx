@@ -58,8 +58,6 @@ export default async function SubmissionPage({
     leaderboard
   );
 
-  console.log(response);
-
   if (response.status === 401) {
     return <RedirectLogin />;
   }
@@ -200,7 +198,7 @@ async function ActivePage({
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
-        updatePause={async (userId, pauseId, time) => {
+        updatePause={async (pauseId, time) => {
           'use server';
           updatePause(userId, pauseId, time);
           revalidatePath('/');
@@ -283,7 +281,7 @@ async function PausedPage({
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
-        updatePause={async (userId, pauseId, time) => {
+        updatePause={async (pauseId, time) => {
           'use server';
           updatePause(userId, pauseId, time);
           revalidatePath('/');
@@ -391,7 +389,7 @@ async function CompletePage({
       <PausesList
         pauses={submission.pauses}
         start_time={submission.start_time}
-        updatePause={async (userId, pauseId, time) => {
+        updatePause={async (pauseId, time) => {
           'use server';
           updatePause(userId, pauseId, time);
           revalidatePath('/');

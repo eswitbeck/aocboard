@@ -21,7 +21,6 @@ export default function PausesList({
   start_time: string,
   pauses: Pause[],
   updatePause: (
-    userId: number | null,
     pauseId: number,
     time: string
   ) => void,
@@ -69,7 +68,6 @@ export default function PausesList({
                 value={p.start_time}
                 onChange={(e) => {
                   updatePause(
-                    1,
                     p.start_id,
                     generateUTCString(e.target.value)
                   );
@@ -81,7 +79,6 @@ export default function PausesList({
                   value={p.end_time}
                   onChange={(e) => {
                     updatePause(
-                      1,
                       p.end_id as number,
                       generateUTCString(e.target.value)
                     );

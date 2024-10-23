@@ -33,8 +33,6 @@ import { SCORING_SCHEMES } from './ScoringSchemes';
 // get dashboard data
 //  - get aggregate data
 //  - get realtime data
-//  - get rankings
-//  - get star data
 
 const getTotalTime = (
   submission: s_Submission,
@@ -558,6 +556,9 @@ export const updatePause = async (
        s.start_time,
        s.star_1_end_time,
        s.star_2_end_time,
+       s.leaderboard_id,
+       s.year,
+       s.day,
        sp.user_id,
        parent.time as parent_time,
        sp.time as time
@@ -1783,7 +1784,6 @@ async function updateScores (
   year: number,
   day: number
 ): Promise<void> {
-  console.log(leaderboardId);
   const { rows: [scoringScheme] } = await client.query(
     `SELECT
       s.type
@@ -1860,8 +1860,6 @@ async function updateScores (
     .map(({ user_id, score }) =>
        `(${user_id}, ${score}, ${year}, ${day}, ${leaderboardId})`)
     .join(', ');
-
-    console.log(insertionClause);
 
   await client.query(
     `INSERT INTO Submission
