@@ -1135,7 +1135,7 @@ export const getLeaderboardInfo = async (
         leaderboardInfo[year] = {};
       }
       if (!leaderboardInfo[year][day]) {
-        leaderboardInfo[year][day] = [];
+        leaderboardInfo[year][day] = {};
       }
       leaderboardInfo[year][day][user_id] = {
         start_time: submission.start_time.toISOString(),

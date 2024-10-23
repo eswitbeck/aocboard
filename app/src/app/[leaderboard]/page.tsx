@@ -164,7 +164,7 @@ function Day ({
         <div className="flex flex-col gap-1">
           {Object.entries(userMap).map(([userid, user]) => {
             const submission = dayInfo[parseInt(userid)];
-            const isComplete = submission?.star_2_end_time !== null;
+            const isComplete = submission?.star_2_end_time ?? null !== null;
             return (null === submission)
               ? (
                 <div key={userid} className="flex flex-row gap-2">
