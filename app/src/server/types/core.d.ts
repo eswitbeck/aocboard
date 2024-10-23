@@ -61,6 +61,8 @@ type s_Pause = {
 type TotalTime = {
   totalTime: number,
   lastTimestamp?: string
+  time_to_first_star: number | null,
+  time_to_second_star: number | null
 }
 
 type LeaderboardUserMap = {

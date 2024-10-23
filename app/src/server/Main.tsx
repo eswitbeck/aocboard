@@ -22,6 +22,14 @@ import {
   s_Submission2Submission
 } from './utils/s2client';
 
+import type {
+  SubmissionTimes,
+  ScoredSubmission
+} from './ScoringSchemes';
+
+import { SCORING_SCHEMES } from './ScoringSchemes';
+
+
 // get dashboard data
 //  - get aggregate data
 //  - get realtime data
@@ -62,7 +70,7 @@ const getTotalTime = (
     }
   }
 
-  const times = [
+  const firstStarTimes = [
     {
       time: start,
       type: 'resume'
@@ -72,7 +80,13 @@ const getTotalTime = (
       ? [{
         time: star1Time,
         type: 'pause'
-      }, {
+      }]
+      : [])
+  ];
+
+  const secondStarTimes = [
+    ...(star1Time
+      ? [{
         time: star1Time,
         type: 'resume'
       }]
@@ -86,10 +100,11 @@ const getTotalTime = (
       : [])
   ];
 
-  let totalTime = 0;
-  for (let i = 0; i < times.length; i += 2) {
-    const start = times[i];
-    const end = times?.[i + 1];
+  let time_to_first_star = 0;
+
+  for (let i = 0; i < firstStarTimes.length; i += 2) {
+    const start = firstStarTimes[i];
+    const end = firstStarTimes?.[i + 1];
 
     if (start.type !== 'resume' ||
       (end && end.type !== 'pause')) {
@@ -97,18 +112,46 @@ const getTotalTime = (
     }
 
     if (end) {
-      totalTime += end.time! - start.time!;
+      time_to_first_star += end.time! - start.time!;
     } else {
       return {
-        totalTime,
+        time_to_first_star: null,
+        time_to_second_star: null,
+        totalTime: time_to_first_star,
+        lastTimestamp: new Date(start.time!).toISOString()
+      };
+    }
+  }
+
+  let time_to_second_star = 0;
+
+  for (let i = 0; i < secondStarTimes.length; i += 2) {
+    const start = secondStarTimes[i];
+    const end = secondStarTimes?.[i + 1];
+
+    if (start.type !== 'resume' ||
+      (end && end.type !== 'pause')) {
+      throw new Error('getTotalTime -- invalid pause/resume sequence');
+    }
+
+    if (end) {
+      time_to_second_star += end.time! - start.time!;
+    } else {
+      return {
+        time_to_first_star,
+        time_to_second_star: null,
+        totalTime: time_to_first_star + time_to_second_star,
         lastTimestamp: new Date(start.time!).toISOString()
       };
     }
   }
 
   return {
-    totalTime
+    time_to_first_star,
+    time_to_second_star,
+    totalTime: time_to_first_star + time_to_second_star,
   };
+
 }
 
 export const getSubmission = async (
@@ -436,6 +479,8 @@ export const completeSubmission = async (
       [time, userId, day, year, leaderboardId]
     );
 
+    updateScores(client, leaderboardId, year, day);
+
     return {
       status: 200,
       body: {
@@ -462,10 +507,10 @@ export const restartSubmission = async (
     return { status: 401 };
   }
 
-  try {
-    const pool = getPool();
-    // check permissions
-    const { rows: [s_Submission] } = await pool.query(
+  const pool = getPool();
+  // check permissions
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: [s_Submission] } = await client.query(
       `DELETE FROM Submission
        WHERE user_id = $1
         AND day = $2
@@ -479,9 +524,15 @@ export const restartSubmission = async (
       return { status: 404, error: 'no submission' };
     }
 
+    updateScores(client, leaderboardId, year, day);
+
     return {
       status: 204,
     };
+  }
+
+  try {
+    return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
     return { status: 500, error: error2String(error) };
@@ -621,6 +672,8 @@ export const updatePause = async (
      [time, pauseId]
    );
 
+   updateScores(client, existing.leaderboard_id, existing.year, existing.day);
+
    return {
      status: 200,
      body: {
@@ -708,6 +761,8 @@ export const updateStartTime = async (
        RETURNING start_time;`,
       [time, userId, day, year, leaderboardId]
     );
+
+    updateScores(client, leaderboardId, year, day);
 
     return {
       status: 200,
@@ -833,6 +888,8 @@ export const updateStarTime = async (
           [time, userId, day, year, leaderboardId]
         );
 
+        updateScores(client, leaderboardId, year, day);
+
         return {
           status: 200,
           body: {
@@ -861,6 +918,8 @@ export const updateStarTime = async (
            RETURNING star_2_end_time;`,
           [time, userId, day, year, leaderboardId]
         );
+
+        updateScores(client, leaderboardId, year, day);
 
         return {
           status: 200,
@@ -1034,12 +1093,16 @@ export const getUsersByLeaderboard = async (
       `SELECT
         u.id,
         u.display_name,
-        u.link
-        -- TODO aggregate score from years/days
+        u.link,
+        SUM(s.score) as score
        FROM AppUser u
        JOIN UserLeaderBoard lu
          ON lu.user_id = u.id
-       WHERE lu.leaderboard_id = $1;`,
+       LEFT JOIN Submission s
+         ON s.user_id = u.id
+         AND s.leaderboard_id = lu.leaderboard_id
+       WHERE lu.leaderboard_id = $1
+       GROUP BY u.id;`,
       [leaderboardId]
     );
 
@@ -1047,7 +1110,7 @@ export const getUsersByLeaderboard = async (
     for (const user of users) {
       leaderboardUserMap[user.id] = {
         display_name: user.display_name,
-        score: 0,
+        score: user.score,
         link: user.link
       };
     }
@@ -1712,6 +1775,101 @@ export const createInvitation = async (
     // @ts-ignore
     return { status: 500, error: error2String(error) };
   }
+}
+
+async function updateScores (
+  client: pg.PoolClient,
+  leaderboardId: number,
+  year: number,
+  day: number
+): Promise<void> {
+  console.log(leaderboardId);
+  const { rows: [scoringScheme] } = await client.query(
+    `SELECT
+      s.type
+     FROM LeaderBoard l
+     JOIN ScoringScheme s
+     ON l.scoring_scheme_id = s.id
+     WHERE l.id = $1;`,
+    [leaderboardId]
+  );
+
+  const type = scoringScheme.type as keyof typeof SCORING_SCHEMES;
+
+
+  const { rows: s_Submissions } = await client.query(
+    `SELECT
+      s.user_id,
+      s.start_time,
+      s.star_1_end_time,
+      s.star_2_end_time,
+      s.language_id,
+      sp.id as sp_id,
+      sp.parent_id as sp_parent_id,
+      sp.type as sp_type,
+      sp.time as sp_time
+     FROM Submission s
+     LEFT JOIN SubmissionPause sp
+       USING(user_id, day, year, leaderboard_id)
+     WHERE s.leaderboard_id = $1
+      AND s.year = $2
+      AND s.day = $3
+     ORDER BY sp.time ASC, sp.type ASC;`,
+    [leaderboardId, year, day]
+  );
+
+  // TODO deduplicate
+  const processedSubmissions = {} as {
+    [key: string]: {
+      submission: s_Submission,
+      pauses: s_Pause[]
+    }
+  };
+
+  for (const submission of s_Submissions) {
+    const { user_id, day, year } = submission;
+    if (!processedSubmissions[user_id]) {
+      processedSubmissions[user_id] = {
+        submission,
+        pauses: []
+      };
+    }
+    if (submission.sp_id) {
+      processedSubmissions[user_id].pauses.push({
+        id: submission.sp_id,
+        day: submission.day,
+        year: submission.year,
+        leaderboard_id: submission.leaderboard_id,
+        user_id: submission.user_id,
+        parent_id: submission.sp_parent_id,
+        type: submission.sp_type,
+        time: submission.sp_time
+      });
+    }
+  }
+
+  const submissionTimes: SubmissionTimes[] = Object.values(processedSubmissions)
+    .map(({ submission, pauses }) => ({
+      user_id: submission.user_id,
+      total_time: getTotalTime(submission, pauses)
+    }));
+
+  const scores = SCORING_SCHEMES[type](submissionTimes);
+
+  const insertionClause = scores
+    .map(({ user_id, score }) =>
+       `(${user_id}, ${score}, ${year}, ${day}, ${leaderboardId})`)
+    .join(', ');
+
+    console.log(insertionClause);
+
+  await client.query(
+    `INSERT INTO Submission
+     (user_id, score, year, day, leaderboard_id)
+     VALUES ${insertionClause}
+     ON CONFLICT (user_id, year, day, leaderboard_id)
+     DO UPDATE SET score = excluded.score;`
+  );
 }
 
 

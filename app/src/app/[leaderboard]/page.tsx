@@ -73,7 +73,7 @@ export default async function Page({
       score,
       link
     })
-  );
+  ).sort(({ score: a }, { score: b }) => b - a);
 
   const years = Array.from(
     { length: new Date().getFullYear() - 2015 + 1 },
