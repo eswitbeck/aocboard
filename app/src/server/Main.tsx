@@ -1095,7 +1095,7 @@ export const getUsersByLeaderboard = async (
         u.id,
         u.display_name,
         u.link,
-        SUM(s.score) as score
+        COALESCE(SUM(s.score), 0) as score
        FROM AppUser u
        JOIN UserLeaderBoard lu
          ON lu.user_id = u.id
@@ -1870,7 +1870,147 @@ async function updateScores (
   );
 }
 
+export const updateAccount = async (
+  userId: number | null,
+  field: 'link' | 'password' | 'display_name',
+  value: string
+): Promise<HTTPLike<{}>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
 
+  try {
+    const pool = getPool();
+    if (field === 'password') {
+      const hashedPassword = bcrypt.hashSync(value, 10);
+      await pool.query(
+        `UPDATE AppUser
+         SET encrypted_password = $1
+         WHERE id = $2;`,
+        [hashedPassword, userId]
+      );
+    } else {
+      await pool.query(
+        `UPDATE AppUser
+         SET ${field} = $1
+         WHERE id = $2;`,
+        [value, userId]
+      );
+    } 
+
+    return {
+      status: 200
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+export const updateLeaderboard = async (
+  userId: number | null,
+  leaderboardId: number,
+  field: 'name' | 'note',
+  value: string
+): Promise<HTTPLike<{}>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+
+    const { rows: [leaderboard] } = await pool.query(
+      `SELECT
+        owner_id
+       FROM Leaderboard
+       WHERE id = $1;`,
+      [leaderboardId]
+    );
+
+    if (!leaderboard) {
+      return { status: 404 };
+    }
+
+    if (leaderboard.owner_id !== userId) {
+      return { status: 403 };
+    }
+
+    await pool.query(
+      `UPDATE Leaderboard
+       SET ${field} = $1
+       WHERE id = $2
+         AND owner_id = $3;`,
+      [value, leaderboardId, userId]
+    );
+
+    return {
+      status: 200
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+export const updateInvitation = async (
+  userId: number | null,
+  leaderboardId: number,
+  expiresAt: '1 day' | '1 week' | '1 month' | '1 year' | 'never' | 'now'
+): Promise<HTTPLike<{}>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: [row] } = await pool.query(
+      `SELECT
+        owner_id
+       FROM Leaderboard
+       WHERE id = $1;`,
+      [leaderboardId]
+    );
+
+    if (!row) {
+      return { status: 404 };
+    }
+
+    if (row.owner_id !== userId) {
+      return { status: 403 };
+    }
+
+    // TODO remove duplication
+    const expiration = {
+      '1 day': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24),
+      '1 week': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 7),
+      '1 month': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 30),
+      '1 year': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365),
+      'never': () =>
+        new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365 * 100),
+      'now': () =>
+        new Date()
+    }[expiresAt]();
+
+    await pool.query(
+      `UPDATE Invitation
+       SET expires_at = $1
+       WHERE leaderboard_id = $2;`,
+      [expiration, leaderboardId]
+    );
+
+    return {
+      status: 200
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
 
 
 // add language to list

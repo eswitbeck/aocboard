@@ -9,13 +9,20 @@ import {
   getLeaderboards,
   createLeaderboard as createLeaderboardApi,
   deleteLeaderboard,
-  createInvitation
+  createInvitation,
+  updateLeaderboard,
+  updateAccount,
+  updateInvitation
 } from '@/server/Main';
 
 import {
   LoginButton,
   LogoutButton
 } from '@/app/_components/AuthButtons';
+
+import InvitationUpdate from '@/app/_components/InvitationUpdate';
+import LeaderboardUpdate from '@/app/_components/LeaderboardUpdate';
+import UserUpdate from '@/app/_components/UserUpdate';
 
 import {
   CreateLeaderboardButton,
@@ -60,6 +67,14 @@ export default async function Page() {
       <p>Welcome, {display_name}!</p>
       <p>Your username is {username}.</p>
       {link && <p>Your account link is {link}.</p>}
+      <UserUpdate updateUser={async (
+        field: 'link' | 'display_name', 
+        value: string
+      ) => {
+        'use server';
+        updateAccount(userid, field, value);
+        revalidatePath('/');
+      }} />
       <LogoutButton logout={handleLogout} />
       <CreateLeaderboardButton createLeaderboard={createLeaderboard} />
       {/* TODO fix the typing here and horrid className runon */}
@@ -77,34 +92,63 @@ export default async function Page() {
               <p key={participant.id}>{participant.display_name}</p>
             ))}
             {leaderboard.is_owner && (
-              <div className="flex gap-2">
-                <p>You are the owner of this leaderboard.</p>
-                <DeleteLeaderboardButton deleteLeaderboard={async () => {
-                  'use server';
-                  await deleteLeaderboard(userid, leaderboard.id);
-                  revalidatePath('/');
-                }} />
-                {leaderboard.invitation && (
-                  <>
-                    <p>Invitation link: {leaderboard.invitation.code}</p>
-                    <p>Expires at: {leaderboard.invitation.expires_at}</p>
-                  </>
-                )}
-                {!leaderboard.invitation && (
-                  <div className="flex gap-2">
-                    <p>No invitation link available.</p>
-                    <CreateInvitationButton createInvitation={async () => {
-                      'use server';
-                      revalidatePath('/');
-                      return await createInvitation(
-                        userid,
-                        leaderboard.id,
-                        // TODO let user set expiration
-                        'never'
-                      );
-                    }} />
+              <div className="flex gap-2 flex-col">
+                <div className="flex gap-2">
+                  <p>You are the owner of this leaderboard.</p>
+                  <DeleteLeaderboardButton deleteLeaderboard={async () => {
+                    'use server';
+                    await deleteLeaderboard(userid, leaderboard.id);
+                    revalidatePath('/');
+                  }} />
+                  {leaderboard.invitation && (
+                    <>
+                      <p>Invitation link: {leaderboard.invitation.code}</p>
+                      <p>Expires at: {leaderboard.invitation.expires_at}</p>
+                    </>
+                  )}
+                  {!leaderboard.invitation && (
+                    <div className="flex gap-2">
+                      <p>No invitation link available.</p>
+                      <CreateInvitationButton createInvitation={async () => {
+                        'use server';
+                        revalidatePath('/');
+                        return await createInvitation(
+                          userid,
+                          leaderboard.id,
+                          // TODO let user set expiration
+                          'never'
+                        );
+                      }} />
                   </div>
                 )}
+                </div>
+                <InvitationUpdate
+                  updateInvitation={async (
+                    expiresAt: '1 day' | '1 week' | '1 month' | '1 year' | 'never' | 'now'
+                  ) => {
+                    'use server';
+                    await updateInvitation(
+                      userid,
+                      leaderboard.id,
+                      expiresAt
+                    );
+                    revalidatePath('/');
+                  }}
+                />
+                <LeaderboardUpdate updateLeaderboard={async (
+                  field: 'name' | 'note',
+                  value: string
+                ) => {
+                  'use server';
+                  await updateLeaderboard(
+                    userid,
+                    leaderboard.id,
+                    field,
+                    value
+                  );
+                  revalidatePath('/');
+                }} />
+
               </div>
             )}
           </div>
