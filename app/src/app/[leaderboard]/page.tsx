@@ -8,6 +8,8 @@ import {
 
 import RedirectLogin from '@/app/_components/RedirectLogin';
 
+import { Base } from '@/components/core/text';
+
 type UsersArray = {
   id: number;
   display_name: string;
@@ -168,8 +170,8 @@ function Day ({
             return (null === submission)
               ? (
                 <div key={userid} className="flex flex-row gap-2">
-                  <div>{user.display_name}</div>
-                  <div>No Submission</div>
+                  <Base>{user.display_name}</Base>
+                  <Base>No Submission</Base>
                 </div>
               )
               : (
@@ -191,8 +193,8 @@ function Day ({
         <div className="flex flex-col gap-1">
           {Object.entries(userMap).map(([userid, user]) => (
             <div key={userid} className="flex flex-row gap-2">
-              <div>{user.display_name}</div>
-              <div>No Submission</div>
+              <Base>{user.display_name}</Base>
+              <Base>No Submission</Base>
             </div>
           ))}
         </div>
