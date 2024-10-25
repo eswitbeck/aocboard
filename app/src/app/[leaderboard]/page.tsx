@@ -1,3 +1,4 @@
+import { twMerge } from 'tailwind-merge'
 import Link from 'next/link';
 
 import {
@@ -7,15 +8,16 @@ import {
 } from '@/server/Main';
 
 import RedirectLogin from '@/app/_components/RedirectLogin';
+import ErrorPage from '@/components/leaderboard/ErrorPage';
+import ForbiddenPage from '@/components/leaderboard/ForbiddenPage';
+import UsersDisplay from '@/components/leaderboard/UsersDisplay';
 
-import { Base } from '@/components/core/text';
+import {
+  H1,
+  H3,
+  Base
+} from '@/components/core/text';
 
-type UsersArray = {
-  id: number;
-  display_name: string;
-  score: number;
-  link: string | null;
-}[];
 
 export default async function Page({
   params: { leaderboard }
@@ -33,36 +35,19 @@ export default async function Page({
     leaderboard
   );
 
-  if (usersResp.status === 403 || leaderboardInfoResp.status === 403) {
-    return (
-      <div>
-        <p>
-          Either you don&apos;t have access to this leaderboard or the leaderboard
-          doesn&apos;t exist.
-        </p>
-        <Link
-          href="/"
-        >
-          Go back to the main page
-        </Link>
-      </div>
-    );
-  }
-
-
   if (usersResp.status === 401 || leaderboardInfoResp.status === 401) {
     return <RedirectLogin />
   }
 
+  if (usersResp.status === 403 || leaderboardInfoResp.status === 403) {
+    return <ForbiddenPage />;
+  }
+
   if (usersResp.status !== 200|| leaderboardInfoResp.status !== 200) {
-    return (
-      <div className="flex flex-col gap-2">
-        {usersResp?.error && <div>Users: {usersResp.error}</div>}
-        {leaderboardInfoResp?.error && (
-          <div>Leaderboard Info: {leaderboardInfoResp.error}</div>
-        )}
-      </div>
-    );
+    return <ErrorPage
+      usersResponse={usersResp}
+      leaderboardInfoResponse={leaderboardInfoResp}
+    />;
   }
 
   const users = usersResp.body!.data;
@@ -81,8 +66,10 @@ export default async function Page({
     { length: new Date().getFullYear() - 2015 + 1 },
     (_, i) => i + 2015
   ).reverse();
+
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="flex flex-col gap-4">
+      <UsersDisplay users={usersArray} />
       <div className="col-span-1">
         <Users users={usersArray} />
       </div>
