@@ -53,7 +53,10 @@ export default async function Page({
   }
 
   const users = usersResp.body!.data;
-  const leaderboardInfo = leaderboardInfoResp.body!.data;
+  const {
+    data: leaderboardInfo,
+    leaderboard: leaderboardDetails
+  } = leaderboardInfoResp.body!;
 
   const usersArray: UsersArray = Object.entries(users).map(
     ([id, { display_name, score, link, avatar_color }]) => ({
@@ -74,6 +77,7 @@ export default async function Page({
     <>
     <UsersDisplay users={usersArray} />
     <Years
+      leaderboardDetails={leaderboardDetails}
       leaderboard={leaderboardInfo}
       userMap={users}
       leaderboardId={leaderboard}

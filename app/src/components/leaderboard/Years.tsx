@@ -14,11 +14,16 @@ import Avatar from './Avatar';
 
 export default function Years({
   leaderboardId,
+  leaderboardDetails,
   userId,
   leaderboard,
   userMap
 }: {
   leaderboardId: number,
+  leaderboardDetails: {
+    name: string,
+    note: string | null
+  },
   userId: number,
   userMap: LeaderboardUserMap,
   leaderboard: LeaderboardInfo
@@ -32,8 +37,53 @@ export default function Years({
     years.map((year) => true)
   );
 
+  const collapseAll = () => {
+    setYearsOpen(years.map(() => false));
+  }
+  const expandAll = () => {
+    setYearsOpen(years.map(() => true));
+  }
+
   return (
     <div className="flex flex-col gap-3 mt-20">
+      <div className={twMerge(
+        "flex flex-col gap-3",
+        "bg-gray-800 p-4",
+        "rounded-lg"
+      )}>
+        <H1 className="my-2">
+          {leaderboardDetails.name}
+        </H1>
+        {leaderboardDetails.note && (
+          <Base className="text-gray-300">
+            {leaderboardDetails.note}
+          </Base>
+        )}
+        <div className="flex gap-8 justify-center">
+          <div onClick={expandAll} className={twMerge(
+            "bg-gray-600 p-2 rounded-lg",
+            "flex justify-center items-center",
+            "group hover:bg-gray-500"
+          )}>
+            <Base className={twMerge(
+              "text-lg text-gray-400 group-hover:text-gray-300"
+            )}>
+              Expand All
+            </Base>
+          </div>
+          <div onClick={collapseAll} className={twMerge(
+            "bg-gray-600 p-2 rounded-lg",
+            "flex justify-center items-center",
+            "group hover:bg-gray-500"
+          )}>
+            <Base className={twMerge(
+              "text-lg text-gray-400 group-hover:text-gray-300"
+            )}>
+              Collapse All
+            </Base>
+          </div>
+        </div>
+      </div>
       {years.map((year, i) => (
         <Year
           key={year}
