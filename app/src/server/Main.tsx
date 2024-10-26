@@ -1095,15 +1095,18 @@ export const getUsersByLeaderboard = async (
         u.id,
         u.display_name,
         u.link,
-        COALESCE(SUM(s.score), 0) as score
+        COALESCE(SUM(s.score), 0) as score,
+        ac.color as avatar_color
        FROM AppUser u
+       JOIN AvatarColor ac
+        ON u.avatar_color_id = ac.id
        JOIN UserLeaderBoard lu
          ON lu.user_id = u.id
        LEFT JOIN Submission s
          ON s.user_id = u.id
          AND s.leaderboard_id = lu.leaderboard_id
        WHERE lu.leaderboard_id = $1
-       GROUP BY u.id;`,
+       GROUP BY u.id, ac.color`,
       [leaderboardId]
     );
 
@@ -1112,7 +1115,8 @@ export const getUsersByLeaderboard = async (
       leaderboardUserMap[user.id] = {
         display_name: user.display_name,
         score: user.score,
-        link: user.link
+        link: user.link,
+        avatar_color: user.avatar_color
       };
     }
 
@@ -1454,19 +1458,21 @@ export async function getAccountData(
     const pool = getPool();
     const { rows: [row] } = await pool.query(
       `SELECT
-        username,
-        display_name,
-        link
-       FROM AppUser
-       WHERE id = $1;`,
+        u.username,
+        u.display_name,
+        u.link,
+        ac.color as avatar_color
+       FROM AppUser u
+       JOIN AvatarColor ac
+         ON u.avatar_color_id = ac.id
+       WHERE u.id = $1;`,
       [userId]
     );
 
     return {
       status: 200,
-      body: {
-        data: row
-      }
+      // todo THIS IS BAD 
+      body: { data: row }
     };
   } catch (error) {
     // @ts-ignore

@@ -3,6 +3,7 @@ type User = {
   display_name: string;
   link: string | null;
   join_time: number;
+  avatar_color: AvatarColor;
 };
 
 type Leaderboard = {

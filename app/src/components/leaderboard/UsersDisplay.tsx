@@ -99,9 +99,14 @@ function MobilePreviewHeader({
         )}
         onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
       >
-        {users.map(({ id, display_name, link }, i) => (
+        {users.map(({
+          id,
+          display_name,
+          link,
+          avatar_color
+        }, i) => (
           <Avatar
-            user={{ display_name, link }}
+            user={{ display_name, link, avatar_color }}
             className={twMerge(
               i !== 0 && "-ml-2",
               "outline-gray-700"
@@ -147,7 +152,13 @@ function MobileDroppedDownHeader ({
       }}
       onClick={() => setDropdownIsOpen(false)}
     >
-      {users.map(({ id, display_name, link, score }, i) => (
+      {users.map(({
+        id,
+        display_name,
+        link,
+        score,
+        avatar_color
+      }, i) => (
         <div className={twMerge(
           "grid grid-cols-10 gap-2",
           "items-center"
@@ -175,7 +186,7 @@ function MobileDroppedDownHeader ({
             )}
           >
             <Avatar
-              user={{ display_name, link }}
+              user={{ display_name, link, avatar_color }}
               size="lg"
               className="outline-gray-700"
             />

@@ -1,5 +1,5 @@
 import { twMerge } from 'tailwind-merge';
-import {Base } from '@/components/core/text';
+import { Base } from '@/components/core/text';
 
 const AVATAR_COLORS = {
   red: {
@@ -11,6 +11,21 @@ const AVATAR_COLORS = {
     border: 'border-amber-900',
     bg: 'bg-amber-500',
     text: 'text-amber-900',
+  },
+  green: {
+    border: 'border-green-900',
+    bg: 'bg-green-500',
+    text: 'text-green-900',
+  },
+  orange: {
+    border: 'border-orange-900',
+    bg: 'bg-orange-500',
+    text: 'text-orange-900',
+  },
+  yellow: {
+    border: 'border-yellow-900',
+    bg: 'bg-yellow-500',
+    text: 'text-yellow-900',
   },
   emerald: {
     border: 'border-emerald-900',
@@ -62,7 +77,11 @@ const AVATAR_COLORS = {
     bg: 'bg-slate-500',
     text: 'text-slate-900',
   },
-};
+} as { [key in AvatarColor]: {
+  border: string,
+  bg: string,
+  text: string,
+} };
 
 export default function Avatar({
   user,
@@ -72,14 +91,13 @@ export default function Avatar({
 }: {
   user: {
     display_name: string,
-    link: string | null
+    link: string | null,
+    avatar_color: AvatarColor
   },
   size?: 'sm' | 'md' | 'lg',
   disabled?: boolean,
   className?: string
 }) {
-  // TODO get color/avatar from account
-  // lookup active/disabled colors
   return (
     <div className="relative">
       <div
@@ -89,8 +107,8 @@ export default function Avatar({
           size === 'md' ? "h-10 w-10" :
                           "h-16 w-16",
           "border-4",
-          AVATAR_COLORS.slate.border,
-          AVATAR_COLORS.slate.bg,
+          AVATAR_COLORS[user.avatar_color].border,
+          AVATAR_COLORS[user.avatar_color].bg,
           "flex justify-center items-center",
           "outline",
           `outline-gray-900`,
@@ -99,7 +117,7 @@ export default function Avatar({
       >
         <Base className={twMerge(
           "font-bold",
-          AVATAR_COLORS.slate.text,
+          AVATAR_COLORS[user.avatar_color].text,
           size === 'sm' ? "text-lg" :
           size === 'md' ? "text-xl" :
                           "text-2xl",

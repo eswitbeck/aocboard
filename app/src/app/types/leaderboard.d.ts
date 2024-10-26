@@ -3,4 +3,5 @@ type UsersArray = {
   display_name: string;
   score: number;
   link: string | null;
+  avatar_color: AvatarColor;
 }[];

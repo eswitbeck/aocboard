@@ -4,6 +4,23 @@ type HTTPLike<T> = {
   error?: any;
 };
 
+type AvatarColor = 
+  'red' |
+  'amber' |
+  'green' |
+  'orange' |
+  'yellow' |
+  'emerald' |
+  'lime' |
+  'teal' |
+  'cyan' |
+  'blue' |
+  'indigo' |
+  'purple' |
+  'fuchsia' |
+  'pink' |
+  'slate';
+
 type s_User = {
   id: number;
   username: string;
@@ -13,6 +30,7 @@ type s_User = {
   link: string | null;
   join_time: number;
   last_login: number;
+  avatar_color: AvatarColor;
 };
 
 type s_Leaderboard = {
@@ -69,7 +87,8 @@ type LeaderboardUserMap = {
   [id: number]: {
     display_name: string,
     score: number,
-    link: string
+    link: string,
+    avatar_color: AvatarColor
   }
 }
 

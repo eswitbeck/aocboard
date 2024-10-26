@@ -56,11 +56,12 @@ export default async function Page({
   const leaderboardInfo = leaderboardInfoResp.body!.data;
 
   const usersArray: UsersArray = Object.entries(users).map(
-    ([id, { display_name, score, link }]) => ({
+    ([id, { display_name, score, link, avatar_color }]) => ({
       id: parseInt(id),
       display_name,
       score,
-      link
+      link,
+      avatar_color
     })
   ).sort(({ score: a }, { score: b }) => b - a);
 
