@@ -1,4 +1,5 @@
 import { twMerge } from 'tailwind-merge';
+import Link from 'next/link';
 
 export const Base = ({
   className,
@@ -83,5 +84,32 @@ export const H3 = ({
     )}>
       {children}
     </h3>
+  );
+}
+
+export const A = ({
+  className,
+  href,
+  children
+}: {
+  className?: string,
+  href: string,
+  children: React.ReactNode
+}) => {
+  const classes = [
+    "text-base/6 font-medium text-gray-200",
+    "underline hover:text-gray-100 hover:no-underline",
+  ];
+
+  return (
+    <Link href={href
+      .replace(/\/$/, '')}>
+      <p className={twMerge(
+        ...classes,
+        className
+      )}>
+        {children}
+      </p>
+    </Link>
   );
 }

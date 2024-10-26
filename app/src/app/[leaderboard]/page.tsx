@@ -13,6 +13,7 @@ import ForbiddenPage from '@/components/leaderboard/ForbiddenPage';
 import UsersDisplay from '@/components/leaderboard/UsersDisplay';
 
 import {
+  A,
   H1,
   H3,
   Base
@@ -68,8 +69,9 @@ export default async function Page({
   ).reverse();
 
   return (
-    <div className="flex flex-col gap-4">
-      <UsersDisplay users={usersArray} />
+    <>
+    <UsersDisplay users={usersArray} />
+    <div className="mt-20" >
       <div className="col-span-1">
         <Users users={usersArray} />
       </div>
@@ -85,6 +87,7 @@ export default async function Page({
         ))}
       </div>
     </div>
+  </>
   );
 }
 
@@ -98,9 +101,10 @@ function Users({
       <h2 className="text-2xl font-bold">Users</h2>
       {users.map((user) => (
         <div key={user.id} className="flex flex-row gap-2">
-          <div>{user.display_name}</div>
-          <div>Score: {user.score}</div>
-          <div>{user.link ? <a href={user.link}>Link</a> : 'No Link'}</div>
+        {user.link ?
+          <A href={user.link}>{user.display_name}</A> :
+          <Base>{user.display_name}</Base>
+        }
         </div>
       ))}
     </div>

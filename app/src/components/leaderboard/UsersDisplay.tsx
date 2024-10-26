@@ -3,11 +3,15 @@ import { twMerge } from 'tailwind-merge'
 import {
   useState
 } from 'react';
+
 import {
+  A,
   H1,
   H3,
   Base
 } from '@/components/core/text';
+
+import Avatar from '@/components/leaderboard/Avatar';
 
 
 export default function UsersDisplay({
@@ -19,16 +23,31 @@ export default function UsersDisplay({
   const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
   return (
     <>
-    <div
-      className={twMerge(
-        "lg:hidden",
-        "bg-gray-600 min-h-8 fixed w-full",
-      )}
-      style={{
-        top: dropdownIsOpen ? "-100%" : "0",
-        transition: "top 5s"
-      }}
+    <MobileDroppedDownHeader
+      users={users}
+      dropdownIsOpen={dropdownIsOpen}
+      setDropdownIsOpen={setDropdownIsOpen}
     />
+    <MobilePreviewHeader
+      users={users}
+      dropdownIsOpen={dropdownIsOpen}
+      setDropdownIsOpen={setDropdownIsOpen}
+    />
+    </>
+  );
+}
+
+function MobilePreviewHeader({
+  users,
+  dropdownIsOpen,
+  setDropdownIsOpen
+}: {
+  users: UsersArray,
+  dropdownIsOpen: boolean,
+  setDropdownIsOpen: (arg0: boolean) => void
+}) {
+  return (
+    <>
     <div className={
       twMerge(
         "rounded-b-md w-full bg-gray-600 min-h-16",
@@ -37,56 +56,153 @@ export default function UsersDisplay({
         "lg:hidden",
       )}
       style={{
-        top: dropdownIsOpen ? "-100%" : "0",
         animation: dropdownIsOpen
-          ? "dropSlide 0.7s ease-in-out forwards"
-          : "none",
+          ? "slideClosed 0.7s ease-in-out forwards"
+          : "slideOpen 0.7s ease 0.3s forwards",
+        transform: "translateY(-10px)",
       }}
     >
       <style>
         {`
-        @keyframes dropSlide {
+        @keyframes slideClosed {
           0% {
             top: 0;
-            transform: translateY(0);
           }
           20% {
             top: 0; 
-            transform: translateY(10px);
+            transform: translateY(0);
           }
           100% {
             top: -100%;
+            transform: translateY(-10px);
           }
         }
-        `}
+
+        @keyframes slideOpen {
+          0% {
+            top: -100%;
+          }
+          100% {
+            top: 0;
+            transform: translateY(-10px);
+          }
+        }
+      `}
       </style>
       <div className={
         twMerge(
           "w-full max-w-4xl bg-gray-700 min-h-12",
           "rounded-lg p-2",
-          "flex"
+          "flex",
+          "mt-[10px]", // for animation
         )}
         onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
       >
-        {users.map(({ id, display_name, score, link }, i) => (
-          <div
+        {users.map(({ id, display_name, link }, i) => (
+          <Avatar
+            user={{ display_name, link }}
+            backgroundColor="gray-700"
             className={twMerge(
-              "bg-red-500 rounded-full",
-              "h-10 w-10",
               i !== 0 && "-ml-2",
-              "border-4 border-red-900",
-              "flex justify-center items-center",
-              "outline-gray-700 outline"
             )}
             key={id}
-          >
-            <Base className="text-red-900 font-bold">
-              {display_name[0].toUpperCase()}
-            </Base>
-          </div>
+            size="md"
+          />
         ))}
       </div>
     </div>
     </>
+  );
+}
+
+function MobileDroppedDownHeader ({
+  users,
+  dropdownIsOpen,
+  setDropdownIsOpen
+}: {
+  users: UsersArray,
+  dropdownIsOpen: boolean,
+  setDropdownIsOpen: (arg0: boolean) => void
+}) {
+  const places = {
+    '1': '🥇',
+    '2': '🥈',
+    '3': '🥉',
+  } as Record<string, string>;
+  return (
+    <div
+      className={twMerge(
+        "lg:hidden",
+        "bg-gray-600 min-h-[75%] fixed w-full",
+        "rounded-b-md",
+        "p-4",
+        "overflow-y-auto",
+      )}
+      style={{
+        top: dropdownIsOpen ? "0" : "-100%",
+        transition: "top 0.7s ease 0.3s",
+        zIndex: 1 // to cover the preview header's flicker
+      }}
+      onClick={() => setDropdownIsOpen(false)}
+    >
+      {users.map(({ id, display_name, link, score }, i) => (
+        <div className={twMerge(
+          "grid grid-cols-10 gap-2",
+          "items-center"
+        )} key={id}>
+          <div className={twMerge(
+            "col-span-1",
+            "flex justify-center items-center"
+          )}>
+            {places[i + 1] ? (
+              <Base className="text-2xl">
+                {places[i + 1]}
+              </Base>
+            ) :
+            (<Base className="text-gray-300 text-2xl">
+              {i + 1}
+            </Base>)
+            }
+          </div>
+          <div
+            className={twMerge(
+              "flex justify-between items-center",
+              "bg-gray-700 rounded-lg p-2",
+              "mb-2",
+              "col-span-9"
+            )}
+          >
+            <Avatar
+              user={{ display_name, link }}
+              backgroundColor="gray-700"
+              size="lg"
+            />
+            <div className={twMerge(
+              "flex flex-col gap-2 justify-between",
+              "items-end"
+            )}>
+              {link ? (
+                <A
+                  href={link}
+                  className={twMerge(
+                    "text-2xl"
+                  )}
+                >
+                  {display_name}
+                </A>
+              )
+              : 
+              <H3 className="text-gray-200 text-2xl my-0">
+                {display_name}
+              </H3>
+              }
+              <Base className="text-gray-300 text-xl">
+                {score}
+              </Base>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
