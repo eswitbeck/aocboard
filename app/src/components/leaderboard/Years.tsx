@@ -184,7 +184,6 @@ function DayRow({
     )}>
       <div className={twMerge(
         "flex items-center gap-2",
-        "overflow-x-auto"
       )}>
         <Link href={`/${leaderboard}/${year}/${day}`}>
           <div className={twMerge(
@@ -216,43 +215,45 @@ function DayRow({
           </Base>
         </div>
 
-        {users.map(({ user, score, complete, id }) => (
-          <div className="h-12 w-12 flex justify-center items-center relative">
-            <div className={twMerge(
-              "absolute -top-1",
-              "flex items-center",
-              complete[2] ? "-right-3" : "-right-1"
-            )} style={{ zIndex: 1 }}>
-              {complete[1] && (
-                <Base
-                  className="text-gray-300 text-2xl"
-                  style={{
-                    textShadow: '0 0 6px #E6EAE8'
-                  }}
-                >
-                  ★
-                </Base>
-              )}
-              {complete[2] && (
-                <Base
-                  className="text-yellow-300 text-2xl"
-                  style={{
-                    textShadow: '0 0 6px #FFF0AD'
-                  }}
-                >
-                  ★
-                </Base>
-              )}
-            </div>
-            <Avatar
-              user={user}
-              size="md"
-              key={id}
-              disabled={!complete[1]}
-              className="outline-gray-800"
-              />
-            </div>
-        ))}
+        <div className="flex items-center gap-2 overflow-x-auto">
+          {users.map(({ user, score, complete, id }) => (
+            <div className="h-12 w-12 flex justify-center items-center relative">
+              <div className={twMerge(
+                "absolute -top-1",
+                "flex items-center",
+                complete[2] ? "-right-3" : "-right-1"
+              )} style={{ zIndex: 1 }}>
+                {complete[1] && (
+                  <Base
+                    className="text-gray-300 text-2xl"
+                    style={{
+                      textShadow: '0 0 6px #E6EAE8'
+                    }}
+                  >
+                    ★
+                  </Base>
+                )}
+                {complete[2] && (
+                  <Base
+                    className="text-yellow-300 text-2xl"
+                    style={{
+                      textShadow: '0 0 6px #FFF0AD'
+                    }}
+                  >
+                    ★
+                  </Base>
+                )}
+              </div>
+              <Avatar
+                user={user}
+                size="md"
+                key={id}
+                disabled={!complete[1]}
+                className="outline-gray-800"
+                />
+              </div>
+          ))}
+        </div>
       </div>
     </div>
   );
