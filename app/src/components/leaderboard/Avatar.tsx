@@ -94,7 +94,7 @@ export default function Avatar({
     link: string | null,
     avatar_color: AvatarColor
   },
-  size?: 'sm' | 'md' | 'lg',
+  size?: 'xs' | 'sm' | 'md' | 'lg',
   disabled?: boolean,
   className?: string
 }) {
@@ -103,6 +103,7 @@ export default function Avatar({
       <div
         className={twMerge(
           "rounded-full",
+          size === 'xs' ? "h-6 w-6" :
           size === 'sm' ? "h-8 w-8" :
           size === 'md' ? "h-10 w-10" :
                           "h-16 w-16",
@@ -118,6 +119,7 @@ export default function Avatar({
         <Base className={twMerge(
           "font-bold",
           AVATAR_COLORS[user.avatar_color].text,
+          size === 'xs' ? "text-sm" :
           size === 'sm' ? "text-lg" :
           size === 'md' ? "text-xl" :
                           "text-2xl",
@@ -128,6 +130,7 @@ export default function Avatar({
       {disabled && (
         <div className={twMerge(
           "absolute rounded-full",
+          size === 'xs' ? "h-6 w-6" :
           size === 'sm' ? "h-8 w-8" :
           size === 'md' ? "h-10 w-10" :
                           "h-16 w-16",

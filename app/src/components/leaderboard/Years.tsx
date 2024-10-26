@@ -6,6 +6,7 @@ import { useState } from 'react';
 import {
   H1,
   Base,
+  Small,
   A
 } from '@/components/core/text';
 
@@ -22,7 +23,9 @@ export default function Years({
   leaderboardId: number,
   leaderboardDetails: {
     name: string,
-    note: string | null
+    note: string | null,
+    owner_id: number,
+    created_at: string
   },
   userId: number,
   userMap: LeaderboardUserMap,
@@ -51,9 +54,36 @@ export default function Years({
         "bg-gray-800 p-4",
         "rounded-lg"
       )}>
-        <H1 className="my-2">
-          {leaderboardDetails.name}
-        </H1>
+        <div className="flex flex-col">
+          <div className="flex gap-2 justify-between items-center mb-3">
+            <div className="flex gap-2">
+              <Avatar
+                user={userMap[leaderboardDetails.owner_id]}
+                size="xs"
+                className="outline-gray-800"
+              />
+              {userMap[leaderboardDetails.owner_id].link ? (
+                  <A
+                    className="text-sm text-gray-400"
+                    href={userMap[leaderboardDetails.owner_id].link}
+                  >
+                    {userMap[leaderboardDetails.owner_id].display_name}
+                  </A>
+              ) : (
+                <Small className="text-gray-400">
+                  {userMap[leaderboardDetails.owner_id].display_name}
+                </Small>
+              )}
+            </div>
+            <Small className="text-gray-400">
+              Created {new Date(leaderboardDetails.created_at)
+                .toLocaleDateString()}
+            </Small>
+          </div>
+          <H1 className="my-2">
+            {leaderboardDetails.name}
+          </H1>
+        </div>
         {leaderboardDetails.note && (
           <Base className="text-gray-300">
             {leaderboardDetails.note}
@@ -61,7 +91,7 @@ export default function Years({
         )}
         <div className="flex gap-8 justify-center">
           <div onClick={expandAll} className={twMerge(
-            "bg-gray-600 p-2 rounded-lg",
+            "bg-gray-700 p-2 rounded-lg",
             "flex justify-center items-center",
             "group hover:bg-gray-500"
           )}>
@@ -72,7 +102,7 @@ export default function Years({
             </Base>
           </div>
           <div onClick={collapseAll} className={twMerge(
-            "bg-gray-600 p-2 rounded-lg",
+            "bg-gray-700 p-2 rounded-lg",
             "flex justify-center items-center",
             "group hover:bg-gray-500"
           )}>

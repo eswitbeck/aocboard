@@ -1142,7 +1142,9 @@ export const getLeaderboardInfo = async (
 ): Promise<HTTPLike<LeaderboardInfo> & { body?: {
   leaderboard: {
     name: string,
-    note: string | null
+    note: string | null,
+    owner_id: number,
+    created_at: string
   }
 } }> => {
   if (!userId) {
@@ -1223,7 +1225,7 @@ export const getLeaderboardInfo = async (
     }
 
     const { rows: [leaderboard] } = await pool.query(
-      `SELECT name, note
+      `SELECT name, note, owner_id, created_at
        FROM Leaderboard
        WHERE id = $1;`,
       [leaderboardId]
@@ -1233,7 +1235,12 @@ export const getLeaderboardInfo = async (
       status: 200,
       body: {
         data: leaderboardInfo,
-        leaderboard
+        leaderboard: {
+          name: leaderboard.name,
+          note: leaderboard.note,
+          owner_id: leaderboard.owner_id,
+          created_at: leaderboard.created_at.toISOString()
+        }
       }
     };
   } catch (error) {
