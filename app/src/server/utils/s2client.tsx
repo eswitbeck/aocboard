@@ -59,6 +59,7 @@ export const s_Submission2Submission = (
     language: s_Submission.language,
     link: s_Submission.link,
     note: s_Submission.note,
+    score: s_Submission.score,
     pauses
   };
 }

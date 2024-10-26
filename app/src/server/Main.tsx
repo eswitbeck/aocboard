@@ -1185,7 +1185,7 @@ export const getLeaderboardInfo = async (
           user_id: submission.user_id,
           parent_id: submission.sp_parent_id,
           type: submission.sp_type,
-          time: submission.sp_time
+          time: submission.sp_time,
         });
       }
     }
@@ -1208,7 +1208,8 @@ export const getLeaderboardInfo = async (
         total_time: getTotalTime(submission, pauses),
         link: submission.link,
         note: submission.note,
-        language: submission.language
+        language: submission.language,
+        score: submission.score
       };
     }
 

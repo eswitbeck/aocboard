@@ -3,9 +3,11 @@ import Link from 'next/link';
 
 export const Base = ({
   className,
+  style,
   children
 }: {
   className?: string,
+  style?: React.CSSProperties,
   children: React.ReactNode
 }) => {
   const classes = [
@@ -16,7 +18,7 @@ export const Base = ({
     <p className={twMerge(
       ...classes,
       className
-    )}>
+    )} style={style}>
       {children}
     </p>
   );

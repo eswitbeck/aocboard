@@ -38,6 +38,7 @@ type Submission = {
   language: string | null,
   link: string | null,
   note: string | null,
+  score: number,
   pauses: Pause[]
 };
 

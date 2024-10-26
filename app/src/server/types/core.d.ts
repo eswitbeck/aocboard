@@ -83,7 +83,8 @@ type LeaderboardInfo = {
         total_time: TotalTime,
         link: string | null,
         note: string | null,
-        language: string | null
+        language: string | null,
+        score: number
       }
     }
   }

@@ -54,6 +54,7 @@ function MobilePreviewHeader({
         "shadow-md p-2 px-4",
         "flex justify-center items-center fixed",
         "lg:hidden",
+        "z-10"
       )}
       style={{
         animation: dropdownIsOpen
@@ -101,9 +102,9 @@ function MobilePreviewHeader({
         {users.map(({ id, display_name, link }, i) => (
           <Avatar
             user={{ display_name, link }}
-            backgroundColor="gray-700"
             className={twMerge(
               i !== 0 && "-ml-2",
+              "outline-gray-700"
             )}
             key={id}
             size="md"
@@ -137,11 +138,12 @@ function MobileDroppedDownHeader ({
         "rounded-b-md",
         "p-4",
         "overflow-y-auto",
+        "shadow-md"
       )}
       style={{
         top: dropdownIsOpen ? "0" : "-100%",
         transition: "top 0.7s ease 0.3s",
-        zIndex: 1 // to cover the preview header's flicker
+        zIndex: 11 // to cover the preview header's flicker
       }}
       onClick={() => setDropdownIsOpen(false)}
     >
@@ -174,8 +176,8 @@ function MobileDroppedDownHeader ({
           >
             <Avatar
               user={{ display_name, link }}
-              backgroundColor="gray-700"
               size="lg"
+              className="outline-gray-700"
             />
             <div className={twMerge(
               "flex flex-col gap-2 justify-between",
