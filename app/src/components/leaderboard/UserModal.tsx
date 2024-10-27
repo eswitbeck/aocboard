@@ -12,10 +12,12 @@ import {
 import Avatar from '@/components/leaderboard/Avatar';
 
 export default function UserModal({
+  userId,
   getSubmission,
   setSubmissionFetcher,
   userMap
 }: {
+  userId: number;
   getSubmission: EmptySubmissionFetcher;
   setSubmissionFetcher: (arg0: EmptySubmissionFetcher | null) => void;
   userMap: LeaderboardUserMap;
@@ -35,6 +37,14 @@ export default function UserModal({
   if (!submissionResp) {
     return null;
   }
+
+  if (submissionResp.status === 404) {
+    return <EmptyModal
+      userId={userId}
+      setSubmissionFetcher={setSubmissionFetcher}
+      userMap={userMap}
+    />;
+  }
   
   const submission = submissionResp.body!.data;
   const totalTime = submissionResp.body!.total_time;
@@ -42,6 +52,8 @@ export default function UserModal({
   if (!submission || !totalTime) {
     return null;
   }
+
+  console.log(submission);
 
   return (
     <div
@@ -111,6 +123,65 @@ export default function UserModal({
             </Base>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyModal({
+  userId,
+  setSubmissionFetcher,
+  userMap
+}: {
+  userId: number;
+  setSubmissionFetcher: (arg0: EmptySubmissionFetcher | null) => void;
+  userMap: LeaderboardUserMap;
+}) {
+  return (
+    <div
+      className={twMerge(
+        'absolute inset-0 bg-gray-900 bg-opacity-50',
+        'flex justify-center items-center z-50'
+      )}
+      onClick={() => setSubmissionFetcher(null)}
+    >
+      <div className={twMerge(
+        'bg-gray-700 rounded-lg',
+        'p-4'
+      )}>
+        <div className={twMerge(
+          'flex gap-8 items-center',
+          'border-b border-gray-600 pb-4 mb-4'
+        )}>
+          <Avatar
+            user={userMap[userId]}
+            size='lg'
+            className="outline-gray-700"
+            disabled={true}
+          />
+          <div className={twMerge(
+            'flex flex-col'
+          )}>
+            {userMap[userId].link ? (
+              <A
+                href={userMap[userId].link}
+                className="text-gray-200 font-bold text-2xl py-4"
+              >
+                {userMap[userId].display_name}
+              </A>
+            )
+            : (
+              <H1>
+                {userMap[userId].display_name}
+              </H1>
+            )}
+            <div className={twMerge(
+              'flex gap-2'
+            )}>
+              {/* TODO: include disabled link/lang state? */}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

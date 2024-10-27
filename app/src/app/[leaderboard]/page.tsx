@@ -12,7 +12,6 @@ import RedirectLogin from '@/app/_components/RedirectLogin';
 import ErrorPage from '@/components/leaderboard/ErrorPage';
 import ForbiddenPage from '@/components/leaderboard/ForbiddenPage';
 import UsersDisplay from '@/components/leaderboard/UsersDisplay';
-import UserModal from '@/components/leaderboard/UserModal';
 import Years from '@/components/leaderboard/Years';
 
 import {

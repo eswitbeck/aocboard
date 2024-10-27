@@ -51,13 +51,18 @@ export default function Years({
 
   const [submissionFetcher, setSubmissionFetcher] =
     useState<EmptySubmissionFetcher | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   return (
     <>
       {!!submissionFetcher && (
         <UserModal
+          userId={selectedId!}
           getSubmission={submissionFetcher}
-          setSubmissionFetcher={setSubmissionFetcher}
+          setSubmissionFetcher={() => {
+            setSubmissionFetcher(null);
+            setSelectedId(null);
+          }}
           userMap={userMap}
         />
       )}
@@ -144,6 +149,7 @@ export default function Years({
               );
             }}
             setSubmissionFetcher={setSubmissionFetcher}
+            setSelectedId={setSelectedId}
             getSubmission={getSubmission}
           />
         ))}
@@ -161,6 +167,7 @@ function Year({
   isOpen,
   setIsOpen,
   setSubmissionFetcher,
+  setSelectedId,
   getSubmission
 }: {
   year: number,
@@ -171,6 +178,7 @@ function Year({
   isOpen: boolean,
   setIsOpen: (isOpen: boolean) => void,
   setSubmissionFetcher: (fetcher: null | EmptySubmissionFetcher) => void,
+  setSelectedId: (id: number) => void,
   getSubmission: SubmissionFetcher
 }) {
   const days = Array.from({ length: 25 }, (_, i) => i + 1);
@@ -213,6 +221,7 @@ function Year({
               userMap={userMap}
               dayInfo={yearInfo?.[day] ?? null}
               setSubmissionFetcher={setSubmissionFetcher}
+              setSelectedId={setSelectedId}
               getSubmission={getSubmission}
               className={twMerge(
                 i !== days.length - 1 && "border-b-2 border-gray-600"
@@ -255,6 +264,7 @@ function DayRow({
   userMap,
   dayInfo,
   setSubmissionFetcher,
+  setSelectedId,
   getSubmission,
   className
 }: {
@@ -265,6 +275,7 @@ function DayRow({
   userMap: LeaderboardUserMap,
   dayInfo: LeaderboardInfo[number][number] | null,
   setSubmissionFetcher: (fetcher: null | EmptySubmissionFetcher) => void,
+  setSelectedId: (id: number) => void,
   getSubmission: SubmissionFetcher,
   className?: string
 }) {
@@ -335,6 +346,7 @@ function DayRow({
                     leaderboard
                   )
                 );
+                setSelectedId(id);
               }}
             >
               <div className={twMerge(
