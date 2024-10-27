@@ -59,10 +59,13 @@ type s_Submission = {
   start_time: Date;
   star_1_end_time: Date | null;
   star_2_end_time: Date | null;
-  score: number;
   language: string | null;
   link: string | null;
   note: string | null;
+  star_1_score: number;
+  star_2_score: number;
+  star_1_index: number | null;
+  star_2_index: number | null;
 };
 
 type s_Pause = {

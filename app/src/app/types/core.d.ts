@@ -39,7 +39,10 @@ type Submission = {
   language: string | null,
   link: string | null,
   note: string | null,
-  score: number,
+  star_1_score: number,
+  star_2_score: number,
+  star_1_index: number | null,
+  star_2_index: number | null,
   pauses: Pause[]
 };
 

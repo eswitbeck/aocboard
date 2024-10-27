@@ -179,6 +179,7 @@ export const getSubmission = async (
       `SELECT 
         s.user_id, s.day, s.year, s.leaderboard_id, s.start_time,
         s.star_1_end_time, s.star_2_end_time, l.name language, s.link, s.note,
+        s.star_1_score, s.star_2_score, s.star_1_index, s.star_2_index,
         sp.id as sp_id,
         sp.parent_id as sp_parent_id,
         sp.type as sp_type,
@@ -1095,7 +1096,10 @@ export const getUsersByLeaderboard = async (
         u.id,
         u.display_name,
         u.link,
-        COALESCE(SUM(s.score), 0) as score,
+        COALESCE(
+          SUM(s.star_1_score + s.star_2_score),
+          0
+        ) as score,
         ac.color as avatar_color
        FROM AppUser u
        JOIN AvatarColor ac
@@ -1216,11 +1220,11 @@ export const getLeaderboardInfo = async (
         start_time: submission.start_time.toISOString(),
         star_1_end_time: submission.star_1_end_time?.toISOString() ?? null,
         star_2_end_time: submission.star_2_end_time?.toISOString() ?? null,
+        score: submission.star_1_score + submission.star_2_score,
         total_time: getTotalTime(submission, pauses),
         link: submission.link,
         note: submission.note,
-        language: submission.language,
-        score: submission.score
+        language: submission.language
       };
     }
 
@@ -1884,16 +1888,44 @@ async function updateScores (
   const scores = SCORING_SCHEMES[type](submissionTimes);
 
   const insertionClause = scores
-    .map(({ user_id, score }) =>
-       `(${user_id}, ${score}, ${year}, ${day}, ${leaderboardId})`)
+    .map(({
+      user_id,
+      star_1_score,
+      star_1_index,
+      star_2_score,
+      star_2_index
+    }) =>
+       `(
+         ${user_id},
+         ${star_1_score},
+         ${star_1_index},
+         ${star_2_score},
+         ${star_2_index},
+         ${year},
+         ${day},
+         ${leaderboardId}
+       )`)
     .join(', ');
 
   await client.query(
     `INSERT INTO Submission
-     (user_id, score, year, day, leaderboard_id)
+     (
+       user_id,
+       star_1_score,
+       star_1_index,
+       star_2_score,
+       star_2_index,
+       year,
+       day,
+       leaderboard_id
+     )
      VALUES ${insertionClause}
      ON CONFLICT (user_id, year, day, leaderboard_id)
-     DO UPDATE SET score = excluded.score;`
+     DO UPDATE SET
+      star_1_score = EXCLUDED.star_1_score,
+      star_1_index = EXCLUDED.star_1_index,
+      star_2_score = EXCLUDED.star_2_score,
+      star_2_index = EXCLUDED.star_2_index;`
   );
 }
 

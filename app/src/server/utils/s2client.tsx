@@ -59,7 +59,10 @@ export const s_Submission2Submission = (
     language: s_Submission.language,
     link: s_Submission.link,
     note: s_Submission.note,
-    score: s_Submission.score,
+    star_1_score: s_Submission.star_1_score,
+    star_2_score: s_Submission.star_2_score,
+    star_1_index: s_Submission.star_1_index,
+    star_2_index: s_Submission.star_2_index,
     pauses
   };
 }
