@@ -11,15 +11,17 @@ import {
 } from '@/components/core/text';
 
 import Avatar from './Avatar';
- 
+import UserModal from './UserModal';
 
 export default function Years({
+  getSubmission,
   leaderboardId,
   leaderboardDetails,
   userId,
   leaderboard,
   userMap
 }: {
+  getSubmission: SubmissionFetcher,
   leaderboardId: number,
   leaderboardDetails: {
     name: string,
@@ -47,92 +49,106 @@ export default function Years({
     setYearsOpen(years.map(() => true));
   }
 
+  const [submissionFetcher, setSubmissionFetcher] =
+    useState<EmptySubmissionFetcher | null>(null);
+
   return (
-    <div className="flex flex-col gap-3 mt-20">
-      <div className={twMerge(
-        "flex flex-col gap-3",
-        "bg-gray-800 p-4",
-        "rounded-lg"
-      )}>
-        <div className="flex flex-col">
-          <div className="flex gap-2 justify-between items-center mb-3">
-            <div className="flex gap-2">
-              <Avatar
-                user={userMap[leaderboardDetails.owner_id]}
-                size="xs"
-                className="outline-gray-800"
-              />
-              {userMap[leaderboardDetails.owner_id].link ? (
-                  <A
-                    className="text-sm text-gray-400"
-                    href={userMap[leaderboardDetails.owner_id].link}
-                  >
-                    {userMap[leaderboardDetails.owner_id].display_name}
-                  </A>
-              ) : (
-                <Small className="text-gray-400">
-                  {userMap[leaderboardDetails.owner_id].display_name}
-                </Small>
-              )}
-            </div>
-            <Small className="text-gray-400">
-              Created {new Date(leaderboardDetails.created_at)
-                .toLocaleDateString()}
-            </Small>
-          </div>
-          <H1 className="my-2">
-            {leaderboardDetails.name}
-          </H1>
-        </div>
-        {leaderboardDetails.note && (
-          <Base className="text-gray-300">
-            {leaderboardDetails.note}
-          </Base>
-        )}
-        <div className="flex gap-8 justify-center">
-          <div onClick={expandAll} className={twMerge(
-            "bg-gray-700 p-2 rounded-lg",
-            "flex justify-center items-center",
-            "group hover:bg-gray-500"
-          )}>
-            <Base className={twMerge(
-              "text-lg text-gray-400 group-hover:text-gray-300"
-            )}>
-              Expand All
-            </Base>
-          </div>
-          <div onClick={collapseAll} className={twMerge(
-            "bg-gray-700 p-2 rounded-lg",
-            "flex justify-center items-center",
-            "group hover:bg-gray-500"
-          )}>
-            <Base className={twMerge(
-              "text-lg text-gray-400 group-hover:text-gray-300"
-            )}>
-              Collapse All
-            </Base>
-          </div>
-        </div>
-      </div>
-      {years.map((year, i) => (
-        <Year
-          key={year}
-          year={year}
-          leaderboard={leaderboardId}
-          userId={userId}
-          yearInfo={leaderboard[year]}
+    <>
+      {!!submissionFetcher && (
+        <UserModal
+          getSubmission={submissionFetcher}
+          setSubmissionFetcher={setSubmissionFetcher}
           userMap={userMap}
-          isOpen={yearsOpen[i]}
-          setIsOpen={(isOpen) => {
-            setYearsOpen(
-              (prev) => prev.map(
-                (_, j) => (i === j ? isOpen : prev[j])
-              )
-            );
-          }}
         />
-      ))}
-    </div>
+      )}
+      <div className="flex flex-col gap-3 mt-20">
+        <div className={twMerge(
+          "flex flex-col gap-3",
+          "bg-gray-800 p-4",
+          "rounded-lg"
+        )}>
+          <div className="flex flex-col">
+            <div className="flex gap-2 justify-between items-center mb-3">
+              <div className="flex gap-2">
+                <Avatar
+                  user={userMap[leaderboardDetails.owner_id]}
+                  size="xs"
+                  className="outline-gray-800"
+                />
+                {userMap[leaderboardDetails.owner_id].link ? (
+                    <A
+                      className="text-sm text-gray-400"
+                      href={userMap[leaderboardDetails.owner_id].link}
+                    >
+                      {userMap[leaderboardDetails.owner_id].display_name}
+                    </A>
+                ) : (
+                  <Small className="text-gray-400">
+                    {userMap[leaderboardDetails.owner_id].display_name}
+                  </Small>
+                )}
+              </div>
+              <Small className="text-gray-400">
+                Created {new Date(leaderboardDetails.created_at)
+                  .toLocaleDateString()}
+              </Small>
+            </div>
+            <H1 className="my-2">
+              {leaderboardDetails.name}
+            </H1>
+          </div>
+          {leaderboardDetails.note && (
+            <Base className="text-gray-300">
+              {leaderboardDetails.note}
+            </Base>
+          )}
+          <div className="flex gap-8 justify-center">
+            <div onClick={expandAll} className={twMerge(
+              "bg-gray-700 p-2 rounded-lg",
+              "flex justify-center items-center",
+              "group hover:bg-gray-500"
+            )}>
+              <Base className={twMerge(
+                "text-lg text-gray-400 group-hover:text-gray-300"
+              )}>
+                Expand All
+              </Base>
+            </div>
+            <div onClick={collapseAll} className={twMerge(
+              "bg-gray-700 p-2 rounded-lg",
+              "flex justify-center items-center",
+              "group hover:bg-gray-500"
+            )}>
+              <Base className={twMerge(
+                "text-lg text-gray-400 group-hover:text-gray-300"
+              )}>
+                Collapse All
+              </Base>
+            </div>
+          </div>
+        </div>
+        {years.map((year, i) => (
+          <Year
+            key={year}
+            year={year}
+            leaderboard={leaderboardId}
+            userId={userId}
+            yearInfo={leaderboard[year]}
+            userMap={userMap}
+            isOpen={yearsOpen[i]}
+            setIsOpen={(isOpen) => {
+              setYearsOpen(
+                (prev) => prev.map(
+                  (_, j) => (i === j ? isOpen : prev[j])
+                )
+              );
+            }}
+            setSubmissionFetcher={setSubmissionFetcher}
+            getSubmission={getSubmission}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -143,7 +159,9 @@ function Year({
   yearInfo,
   userMap,
   isOpen,
-  setIsOpen
+  setIsOpen,
+  setSubmissionFetcher,
+  getSubmission
 }: {
   year: number,
   leaderboard: number,
@@ -151,7 +169,9 @@ function Year({
   yearInfo: LeaderboardInfo[number],
   userMap: LeaderboardUserMap,
   isOpen: boolean,
-  setIsOpen: (isOpen: boolean) => void
+  setIsOpen: (isOpen: boolean) => void,
+  setSubmissionFetcher: (fetcher: null | EmptySubmissionFetcher) => void,
+  getSubmission: SubmissionFetcher
 }) {
   const days = Array.from({ length: 25 }, (_, i) => i + 1);
   return (
@@ -192,6 +212,8 @@ function Year({
               userId={userId}
               userMap={userMap}
               dayInfo={yearInfo?.[day] ?? null}
+              setSubmissionFetcher={setSubmissionFetcher}
+              getSubmission={getSubmission}
               className={twMerge(
                 i !== days.length - 1 && "border-b-2 border-gray-600"
               )}
@@ -232,6 +254,8 @@ function DayRow({
   userId,
   userMap,
   dayInfo,
+  setSubmissionFetcher,
+  getSubmission,
   className
 }: {
   leaderboard: number,
@@ -240,6 +264,8 @@ function DayRow({
   userId: number,
   userMap: LeaderboardUserMap,
   dayInfo: LeaderboardInfo[number][number] | null,
+  setSubmissionFetcher: (fetcher: null | EmptySubmissionFetcher) => void,
+  getSubmission: SubmissionFetcher,
   className?: string
 }) {
   const userCompletions = isComplete(userId, dayInfo);
@@ -297,7 +323,20 @@ function DayRow({
 
         <div className="flex items-center gap-2 overflow-x-auto">
           {users.map(({ user, score, complete, id }) => (
-            <div className="h-12 w-12 flex justify-center items-center relative">
+            <div
+              className="h-12 w-12 flex justify-center items-center relative"
+              onClick={() => {
+                setSubmissionFetcher(
+                  //@ts-ignore React treats () => as prevState => newState
+                  () => () => getSubmission(
+                    id,
+                    day,
+                    year,
+                    leaderboard
+                  )
+                );
+              }}
+            >
               <div className={twMerge(
                 "absolute -top-1",
                 "flex items-center",

@@ -2,6 +2,7 @@ import { twMerge } from 'tailwind-merge'
 import Link from 'next/link';
 
 import {
+  getSubmission,
   getUsersByLeaderboard,
   getLeaderboardInfo,
   getUserIdFromAccessToken
@@ -11,6 +12,7 @@ import RedirectLogin from '@/app/_components/RedirectLogin';
 import ErrorPage from '@/components/leaderboard/ErrorPage';
 import ForbiddenPage from '@/components/leaderboard/ForbiddenPage';
 import UsersDisplay from '@/components/leaderboard/UsersDisplay';
+import UserModal from '@/components/leaderboard/UserModal';
 import Years from '@/components/leaderboard/Years';
 
 import {
@@ -78,6 +80,15 @@ export default async function Page({
     <UsersDisplay users={usersArray} />
     <Years
       leaderboardDetails={leaderboardDetails}
+      getSubmission={async (
+        userId: number,
+        year: number,
+        month: number,
+        day: number
+      ) => {
+        'use server';
+        return await getSubmission(userId, year, month, day);
+      }}
       leaderboard={leaderboardInfo}
       userMap={users}
       leaderboardId={leaderboard}
