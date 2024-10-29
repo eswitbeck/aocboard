@@ -1,7 +1,8 @@
 'use client';
 import { twMerge } from 'tailwind-merge'
 import {
-  useState
+  useState,
+  useEffect
 } from 'react';
 import Link from 'next/link';
 
@@ -58,6 +59,12 @@ function MobilePreviewHeader({
   dropdownIsOpen: boolean,
   setDropdownIsOpen: (arg0: boolean) => void
 }) {
+  const [isFirstRender, setIsFirstRender] = useState(true);
+
+  useEffect(() => {
+    setIsFirstRender(false);
+  }, []);
+
   return (
     <>
     <div className={twMerge(
@@ -71,10 +78,13 @@ function MobilePreviewHeader({
       )}
       onClick={() => setDropdownIsOpen(true)}
       style={{
-        animation: dropdownIsOpen
-          ? "slideClosed 0.7s ease-in-out forwards"
-          : "slideOpen 0.7s ease 0.3s forwards",
+        animation: !isFirstRender ?
+          dropdownIsOpen
+            ? "slideClosed 0.7s ease-in-out forwards"
+            : "slideOpen 0.7s ease 0.3s forwards"
+          : "none",
         transform: "translateY(-10px)",
+        top: 0
       }}
     >
       <style>
@@ -82,26 +92,21 @@ function MobilePreviewHeader({
         @keyframes slideClosed {
           0% {
             top: 0;
-            transform: translateY(-10px);
           }
           20% {
-            top: 0; 
-            transform: translateY(0);
+            top: 10px;
           }
           100% {
             top: -100%;
-            transform: translateY(-10px);
           }
         }
 
         @keyframes slideOpen {
           0% {
             top: -100%;
-            transform: translateY(-10px);
           }
           100% {
             top: 0;
-            transform: translateY(-10px);
           }
         }
       `}
