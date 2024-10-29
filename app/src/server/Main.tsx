@@ -2071,6 +2071,42 @@ export const updateInvitation = async (
   }
 }
 
+export const getSelf = async (
+  userId: number | null
+): Promise<HTTPLike<User>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: [user] } = await pool.query(
+      `SELECT
+        u.id,
+        username,
+        display_name,
+        link,
+        ac.color as avatar_color
+       FROM AppUser u
+       JOIN AvatarColor ac
+         ON avatar_color_id = ac.id
+       WHERE u.id = $1;`,
+      [userId]
+    );
+
+    return {
+      status: 200,
+      body: {
+        data: user
+      }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+
 
 // add language to list
 

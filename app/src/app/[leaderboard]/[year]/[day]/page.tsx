@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { twMerge } from 'tailwind-merge';
 
 import {
   timestamp2Clock,
@@ -20,8 +21,20 @@ import {
   updateStarTime,
   getLanguages,
   updateLanguage,
-  updateSubmission
+  updateSubmission,
+  getSelf
 } from '@/server/Main';
+
+import {
+  Base,
+  H1,
+  H3,
+  A
+} from '@/components/core/text';
+
+import Avatar from '@/components/shared/Avatar';
+
+
 
 import Clock from '@/app/_components/Clock';
 import LanguageInput from '@/app/_components/LanguageInput';
@@ -51,18 +64,22 @@ export default async function SubmissionPage({
 
   const userId = await getUserIdFromAccessToken();
 
-  const response = await getSubmission(
+  const currentUserResp = await getSelf(userId);
+
+  const submissionResponse = await getSubmission(
     userId,
     day,
     year,
     leaderboard
   );
 
-  if (response.status === 401) {
+  if (submissionResponse.status === 401) {
     return <RedirectLogin />;
   }
 
-  if (response.status === 403) {
+  const currentUser = currentUserResp.body!.data;
+
+  if (submissionResponse.status === 403) {
     return (
       <div>
         <p>
@@ -75,42 +92,87 @@ export default async function SubmissionPage({
     );
   }
 
-  if (response.status === 404) {
-    return <PreStartPage
-      userId={userId}
-      day={day}
-      year={year}
-      leaderboard={leaderboard}
-    />;
+  if (submissionResponse.status === 404) {
+    return (
+      <>
+        <Header
+          currentUser={currentUser}
+          leaderboard={leaderboard}
+          day={day}
+          year={year}
+        />
+        <PreStartPage
+          userId={userId}
+          day={day}
+          year={year}
+          leaderboard={leaderboard}
+        />
+      </>
+    );
   }
 
-  if (response.status >= 400) {
-    return <ErrorPage error={response.error} />;
+  if (submissionResponse.status >= 400) {
+    return <ErrorPage error={submissionResponse.error} />;
   }
 
-  const submission = response.body?.data!;
+  const submission = submissionResponse.body?.data!;
   // @ts-ignore -- dangerous ignore here
-  const totalTime = response.body?.total_time!;
+  const totalTime = submissionResponse.body?.total_time!;
 
   const isComplete = submission.star_2_end_time !== null;
   const isPaused = !Object.hasOwn(totalTime, 'lastTimestamp');
 
   if (isComplete) {
     return (
-      <CompletePage
-        totalTime={totalTime}
-        submission={submission}
-        userId={userId}
-        day={day}
-        year={year}
-        leaderboard={leaderboard}
-      />
+      <>
+        <Header
+          currentUser={currentUser}
+          leaderboard={leaderboard}
+          day={day}
+          year={year}
+        />
+        <CompletePage
+          totalTime={totalTime}
+          submission={submission}
+          userId={userId}
+          day={day}
+          year={year}
+          leaderboard={leaderboard}
+        />
+      </>
     );
   }
   if (!isPaused) {
     return (
-      <ActivePage
-        time={time}
+      <>
+        <Header
+          currentUser={currentUser}
+          leaderboard={leaderboard}
+          day={day}
+          year={year}
+        />
+        <ActivePage
+          time={time}
+          totalTime={totalTime}
+          submission={submission}
+          userId={userId}
+          day={day}
+          year={year}
+          leaderboard={leaderboard}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header
+        currentUser={currentUser}
+        leaderboard={leaderboard}
+        year={year}
+        day={day}
+      />
+      <PausedPage
         totalTime={totalTime}
         submission={submission}
         userId={userId}
@@ -118,18 +180,7 @@ export default async function SubmissionPage({
         year={year}
         leaderboard={leaderboard}
       />
-    );
-  }
-
-  return (
-    <PausedPage
-      totalTime={totalTime}
-      submission={submission}
-      userId={userId}
-      day={day}
-      year={year}
-      leaderboard={leaderboard}
-    />
+    </>
   );
 }
 
@@ -546,6 +597,76 @@ function RestartButton({
       >
         Restart
       </ServerActionButton>
+    </div>
+  );
+}
+
+function Header ({
+  currentUser,
+  leaderboard,
+  day,
+  year
+}: {
+    currentUser: {
+    display_name: string,
+    avatar_color: AvatarColor,
+  },
+  leaderboard: number,
+  day: number,
+  year: number
+  // TODO also need leaderboard name and owner (with name and color)
+}) {
+  return (
+    <div className={twMerge(
+        "w-full min-h-16",
+        "p-2 px-4",
+        "flex justify-center items-center gap-2", 
+        "lg:hidden",
+        "pt-[15px]", // for header
+      )}
+    >
+      <Link href={`/${leaderboard}`}>
+        <div className={twMerge(
+          "flex justify-center items-center",
+          "rounded-lg bg-gray-700 px-4 py-2",
+          "w-11 h-11"
+        )}>
+          <Base className="text-xl font-bold">
+            {'<'}
+          </Base>
+        </div>
+      </Link>
+       
+      <div className={twMerge(
+        "flex w-full justify-center items-center"
+      )}>
+        <div className="flex flex-col gap-1 items-center">
+          <H1 className="my-0 text-gray-200">
+            Day {day}
+          </H1>
+          <H3 className="my-0 text-gray-400">
+            {year}
+          </H3>
+        </div>
+      </div>
+
+      <Link href="/">
+        <div className={twMerge(
+          "flex justify-center items-center",
+          "rounded-lg bg-gray-700 px-4 py-2",
+          "w-11 h-11"
+        )}>
+          <Avatar
+            size="sm"
+            className="outline-gray-700"
+            user={{
+              display_name: currentUser.display_name,
+              link: '/',
+              avatar_color: currentUser.avatar_color
+            }}
+          />
+        </div>
+      </Link>
     </div>
   );
 }
