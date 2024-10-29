@@ -76,7 +76,10 @@ export default async function Page({
 
   return (
     <>
-    <UsersDisplay users={usersArray} />
+    <UsersDisplay
+      users={usersArray}
+      currentUser={users[userId!]}
+    />
     <Years
       leaderboardDetails={leaderboardDetails}
       getSubmission={async (

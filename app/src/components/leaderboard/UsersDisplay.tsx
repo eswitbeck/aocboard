@@ -3,6 +3,7 @@ import { twMerge } from 'tailwind-merge'
 import {
   useState
 } from 'react';
+import Link from 'next/link';
 
 import {
   A,
@@ -11,14 +12,19 @@ import {
   Base
 } from '@/components/core/text';
 
-import Avatar from '@/components/leaderboard/Avatar';
+import Avatar from '@/components/shared/Avatar';
 
 
 export default function UsersDisplay({
-  users
+  users,
+  currentUser
 }: {
   // expects sorted from highest score to lowest
-  users: UsersArray
+  users: UsersArray,
+  currentUser: {
+    display_name: string,
+    avatar_color: AvatarColor
+  }
 }) {
   const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
   return (
@@ -29,6 +35,7 @@ export default function UsersDisplay({
       setDropdownIsOpen={setDropdownIsOpen}
     />
     <MobilePreviewHeader
+      currentUser={currentUser}
       users={users}
       dropdownIsOpen={dropdownIsOpen}
       setDropdownIsOpen={setDropdownIsOpen}
@@ -38,24 +45,31 @@ export default function UsersDisplay({
 }
 
 function MobilePreviewHeader({
+  currentUser,
   users,
   dropdownIsOpen,
   setDropdownIsOpen
 }: {
+  currentUser: {
+    display_name: string,
+    avatar_color: AvatarColor
+  },
   users: UsersArray,
   dropdownIsOpen: boolean,
   setDropdownIsOpen: (arg0: boolean) => void
 }) {
   return (
     <>
-    <div className={
-      twMerge(
+    <div className={twMerge(
         "rounded-b-md w-full bg-gray-600 min-h-16",
         "shadow-md p-2 px-4",
-        "flex justify-center items-center fixed",
+        "flex justify-center items-center gap-2", 
+        "fixed",
         "lg:hidden",
-        "z-10"
+        "z-10",
+        "pt-[30px]", // for animation
       )}
+      onClick={() => setDropdownIsOpen(true)}
       style={{
         animation: dropdownIsOpen
           ? "slideClosed 0.7s ease-in-out forwards"
@@ -68,6 +82,7 @@ function MobilePreviewHeader({
         @keyframes slideClosed {
           0% {
             top: 0;
+            transform: translateY(-10px);
           }
           20% {
             top: 0; 
@@ -82,6 +97,7 @@ function MobilePreviewHeader({
         @keyframes slideOpen {
           0% {
             top: -100%;
+            transform: translateY(-10px);
           }
           100% {
             top: 0;
@@ -90,14 +106,23 @@ function MobilePreviewHeader({
         }
       `}
       </style>
+      <Link href="/">
+        <div className={twMerge(
+          "flex justify-center items-center",
+          "rounded-lg bg-gray-700 px-4 py-2",
+          "w-11 h-11"
+        )}>
+          <Base className="text-xl font-bold">
+            {'<'}
+          </Base>
+        </div>
+      </Link>
       <div className={
         twMerge(
           "w-full max-w-4xl bg-gray-700 min-h-12",
           "rounded-lg p-2",
           "flex",
-          "mt-[10px]", // for animation
         )}
-        onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
       >
         {users.map(({
           id,
@@ -116,6 +141,23 @@ function MobilePreviewHeader({
           />
         ))}
       </div>
+      <Link href="/">
+        <div className={twMerge(
+          "flex justify-center items-center",
+          "rounded-lg bg-gray-700 px-4 py-2",
+          "w-11 h-11"
+        )}>
+          <Avatar
+            size="sm"
+            className="outline-gray-700"
+            user={{
+              display_name: currentUser.display_name,
+              link: '/',
+              avatar_color: currentUser.avatar_color
+            }}
+          />
+        </div>
+      </Link>
     </div>
     </>
   );
@@ -160,6 +202,7 @@ function MobileDroppedDownHeader ({
         avatar_color
       }, i) => (
         <div className={twMerge(
+          i === 0 ? "mt-[15px]" : "", // for header
           "grid grid-cols-10 gap-2",
           "items-center"
         )} key={id}>

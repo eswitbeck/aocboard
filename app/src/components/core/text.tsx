@@ -11,7 +11,7 @@ export const Base = ({
   children: React.ReactNode
 }) => {
   const classes = [
-    "text-base/6 font-medium text-gray-200",
+    "text-base font-medium text-gray-200",
   ];
 
   return (
@@ -32,7 +32,7 @@ export const Small = ({
   children: React.ReactNode
 }) => {
   const classes = [
-    "text-sm/6 font-medium text-gray-200",
+    "text-sm font-medium text-gray-200",
   ];
 
   return (
@@ -53,7 +53,7 @@ export const H1 = ({
   children: React.ReactNode
 }) => {
   const classes = [
-    "text-3xl/6 font-bold text-gray-200",
+    "text-3xl font-bold text-gray-200",
     "my-4",
   ];
 
@@ -75,7 +75,7 @@ export const H3 = ({
   children: React.ReactNode
 }) => {
   const classes = [
-    "text-xl/6 font-bold text-gray-200",
+    "text-xl font-bold text-gray-200",
     "my-2",
   ];
 
@@ -99,7 +99,7 @@ export const A = ({
   children: React.ReactNode
 }) => {
   const classes = [
-    "text-base/6 font-medium text-gray-200",
+    "text-base font-medium text-gray-200",
     "underline hover:text-gray-100 hover:no-underline",
   ];
 

@@ -10,7 +10,7 @@ import {
   A
 } from '@/components/core/text';
 
-import Avatar from './Avatar';
+import Avatar from '../shared/Avatar';
 import UserModal from './UserModal';
 
 export default function Years({
@@ -66,7 +66,7 @@ export default function Years({
           userMap={userMap}
         />
       )}
-      <div className="flex flex-col gap-3 mt-20">
+      <div className="flex flex-col gap-3 mt-24">
         <div className={twMerge(
           "flex flex-col gap-3",
           "bg-gray-800 p-4",
@@ -213,7 +213,7 @@ function Year({
         )}>
           {isOpen && days.map((day, i) => (
             <DayRow
-              key={day}
+              key={`${year}-${day}`}
               leaderboard={leaderboard}
               year={year}
               day={day}
@@ -335,6 +335,7 @@ function DayRow({
         <div className="flex items-center gap-2 overflow-x-auto">
           {users.map(({ user, score, complete, id }) => (
             <div
+              key={id}
               className="h-12 w-12 flex justify-center items-center relative"
               onClick={() => {
                 setSubmissionFetcher(
