@@ -10,7 +10,6 @@ import {
 
 import {
   getUserIdFromAccessToken,
-  startSubmission,
   getSubmission,
   pauseSubmission,
   resumeSubmission,
@@ -33,6 +32,8 @@ import {
 } from '@/components/core/text';
 
 import Avatar from '@/components/shared/Avatar';
+
+import PreStartPage from '@/components/day/PreStartPage';
 
 
 
@@ -95,13 +96,8 @@ export default async function SubmissionPage({
   if (submissionResponse.status === 404) {
     return (
       <>
-        <Header
-          currentUser={currentUser}
-          leaderboard={leaderboard}
-          day={day}
-          year={year}
-        />
         <PreStartPage
+          currentUser={currentUser}
           userId={userId}
           day={day}
           year={year}
@@ -370,29 +366,6 @@ async function PausedPage({
   );
 }
 
-function PreStartPage({
-  userId,
-  day,
-  year,
-  leaderboard
-}: {
-  userId: number | null,
-  day: number,
-  year: number,
-  leaderboard: number
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <p>You haven't started yet</p>
-      <StartButton
-        userId={userId}
-        day={day}
-        year={year}
-        leaderboard={leaderboard}
-      />
-    </div>
-  );
-}
 
 function ErrorPage({ error }: { error: string }) {
   return (
@@ -478,29 +451,6 @@ async function CompletePage({
   );
 }
 
-function StartButton({
-  userId,
-  day,
-  year,
-  leaderboard
-}: {
-  userId: number | null,
-  day: number,
-  year: number,
-  leaderboard: number
-}) {
-  return (
-    <ServerActionButton
-      fn={async () => {
-        'use server';
-        const response = await startSubmission(userId, day, year, leaderboard);
-        revalidatePath('/');
-      }}
-    >
-      Start
-    </ServerActionButton>
-  );
-}
 
 function PauseButton({
   userId,

@@ -12,6 +12,7 @@ export const Base = ({
 }) => {
   const classes = [
     "text-base font-medium text-gray-200",
+    "leading-none! align-baseline"
   ];
 
   return (
@@ -33,6 +34,7 @@ export const Small = ({
 }) => {
   const classes = [
     "text-sm font-medium text-gray-200",
+    "align-baseline leading-none!"
   ];
 
   return (
@@ -55,6 +57,7 @@ export const H1 = ({
   const classes = [
     "text-3xl font-bold text-gray-200",
     "my-4",
+    "align-baseline leading-none!"
   ];
 
   return (
@@ -77,6 +80,7 @@ export const H3 = ({
   const classes = [
     "text-xl font-bold text-gray-200",
     "my-2",
+    "align-baseline leading-none!"
   ];
 
   return (
@@ -101,6 +105,7 @@ export const A = ({
   const classes = [
     "text-base font-medium text-gray-200",
     "underline hover:text-gray-100 hover:no-underline",
+    "align-baseline leading-none!"
   ];
 
   return (
