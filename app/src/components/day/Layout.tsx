@@ -32,7 +32,9 @@ export default function Layout({
         day={day}
         year={year}
       />
-      <div className="flex flex-col gap-12 p-4 mb-8 mt-[15%]">
+      <div className={twMerge(
+        "flex flex-col gap-12 py-4 mb-8 mt-[10%]",
+      )}>
         {children}
       </div>
     </>
@@ -69,7 +71,7 @@ function Header ({
           "rounded-lg bg-gray-700 px-4 py-2",
           "w-11 h-11"
         )}>
-          <Base className="text-xl font-bold">
+          <Base className="text-xl font-bold text-gray-300">
             {'<'}
           </Base>
         </div>
@@ -79,10 +81,10 @@ function Header ({
         "flex w-full justify-center items-center"
       )}>
         <div className="flex flex-col gap-1 items-center">
-          <H1 className="my-0 text-gray-200">
+          <H1 className="my-0 text-gray-300">
             Day {day}
           </H1>
-          <H3 className="my-0 text-gray-400">
+          <H3 className="my-0 text-gray-500">
             {year}
           </H3>
         </div>

@@ -14,7 +14,7 @@ export default function Stars({
         "text-3xl",
         stars.star_1
           ? "hue-rotate-90 brightness-125 grayscale"
-          : "filter brightness-50 contrast-150 grayscale"
+          : "filter brightness-50 contrast-200 grayscale"
       )}>
         ⭐
       </span>
@@ -22,7 +22,7 @@ export default function Stars({
         "text-3xl",
         stars.star_2
           ? "hue-rotate-45 brightness-110"
-          : "filter brightness-50 contrast-150 grayscale"
+          : "filter brightness-50 contrast-200 grayscale"
       )}>
         ⭐
       </span>

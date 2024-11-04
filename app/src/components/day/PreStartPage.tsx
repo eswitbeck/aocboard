@@ -1,3 +1,5 @@
+import { twMerge } from 'tailwind-merge';
+ 
 import Buttons from './Buttons';
 import Clock from './Clock';
 import Icons from './Icons';
@@ -30,19 +32,25 @@ export default function PreStartPage({
       day={day}
       year={year}
     >
-      <div className="flex flex-col gap-2">
-        <Stars stars={{ star_1: false, star_2: false }} />
-        <Clock timeString="00:00:00" />
+      <div className={twMerge(
+        "flex flex-col gap-2",
+        "w-full py-4"
+      )}>
+        <Stars stars={{
+          star_1: true,
+          star_2: true
+        }} />
+        <Clock timeString="00:00:00" isEditable />
         <Icons 
-          isDisabled={true}
+          isDisabled={false}
         />
       </div>
       <div /> {/* spacer div */}
       <Buttons 
         disabled={{
-          undo: true,
-          star: true,
-          pause: false
+          undo: false,
+          star: false,
+          pause: false,
         }}
         functions={{
           undo: fillerFn,

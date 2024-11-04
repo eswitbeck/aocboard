@@ -40,13 +40,13 @@ export default function Buttons({
         className={twMerge(
           "flex justify-center items-center",
           "p-2 rounded-2xl",
-          disabled.undo ? "bg-gray-700" : "bg-gray-600"
+          disabled.undo ? "bg-gray-800" : "bg-gray-700"
         )}
         onClick={functions.undo}
       >
         <ArrowUturnLeftIcon
           className={twMerge(
-            disabled.undo ? "text-gray-600" : "text-gray-200",
+            disabled.undo ? "text-gray-700" : "text-gray-400",
             "w-12 h-12"
           )}
         />
@@ -56,19 +56,28 @@ export default function Buttons({
           "flex justify-center items-center",
           "p-2 rounded-3xl",
           "relative",
-          disabled.star ? "bg-gray-700" : "bg-gray-600"
+          disabled.star ? "bg-gray-800" : "bg-gray-600"
         )}
         onClick={functions.star}
       >
-        <StarIcon
-          className={twMerge(
-            disabled.star ? "text-gray-600" : "text-gray-200",
-            "w-20 h-20"
-          )}
-        />
+        {disabled.star ? (
+          <StarIcon
+            className={twMerge(
+              "text-gray-700",
+              "w-20 h-20"
+            )}
+          />
+        ) : (
+          <SolidStarIcon
+            className={twMerge(
+              "text-gray-300",
+              "w-20 h-20"
+            )}
+          />
+        )} 
         <PlusIcon
           className={twMerge(
-            disabled.star ? "text-gray-600" : "text-gray-200",
+            disabled.star ? "text-gray-700" : "text-gray-300",
             "w-6 h-6",
             "absolute top-2 right-2"
           )}
@@ -78,24 +87,42 @@ export default function Buttons({
         className={twMerge(
           "flex justify-center items-center",
           "p-2 rounded-2xl",
-          disabled.pause ? "bg-gray-700" : "bg-gray-600"
+          disabled.pause ? "bg-gray-800" : "bg-gray-700"
         )}
         onClick={functions.pause}
       >
         {functions.isPause ? (
-          <PauseIcon
-            className={twMerge(
-              disabled.pause ? "text-gray-600" : "text-gray-200",
-              "w-12 h-12"
-            )}
-          />
+          disabled.pause ? (
+            <PauseIcon
+              className={twMerge(
+                "text-gray-700",
+                "w-12 h-12"
+              )}
+            />
+          ) : (
+            <SolidPauseIcon
+              className={twMerge(
+                "text-gray-400",
+                "w-12 h-12"
+              )}
+            />
+          )
         ) : (
-          <PlayIcon
-            className={twMerge(
-              disabled.pause ? "text-gray-600" : "text-gray-200",
-              "w-12 h-12"
-            )}
-          />
+          disabled.pause ? (
+            <PlayIcon
+              className={twMerge(
+                "text-gray-700",
+                "w-12 h-12"
+              )}
+            />
+          ) : (
+            <SolidPlayIcon
+              className={twMerge(
+                "text-gray-400",
+                "w-12 h-12"
+              )}
+            />
+          )
         )}
       </div>
     </div>

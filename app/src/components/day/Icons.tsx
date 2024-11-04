@@ -21,14 +21,17 @@ export default function Icons({
   toggleCopyModal?: () => void,
   toggleLanguageModal?: () => void
 }) {
-  const divClasses="p-2 rounded-2xl bg-gray-700";
-  const classes=twMerge(
+  const divClasses = twMerge(
+    "p-2 rounded-2xl",
+    isDisabled ? "bg-gray-700" : "bg-gray-600"
+  );
+  const classes = twMerge(
     "w-8 h-8",
     isDisabled ? "text-gray-600" : "text-gray-400"
   );
 
   return (
-    <div className="flex gap-4 justify-center items-center">
+    <div className="flex gap-4 justify-center items-center mt-4">
       <div
         className={divClasses}
         onClick={toggleCommentModal}
