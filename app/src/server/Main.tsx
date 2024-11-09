@@ -145,8 +145,8 @@ const getTotalTime = (
   }
 
   return {
-    time_to_first_star,
-    time_to_second_star,
+    time_to_first_star: star1Time ? time_to_first_star : null,
+    time_to_second_star : star2Time ? time_to_second_star : null,
     totalTime: time_to_first_star + time_to_second_star,
   };
 
