@@ -17,12 +17,11 @@ export default function Clock({
   isEditable,
   onClick
 }: {
-  time: TotalTime,
+  time: string,
   isEditable?: boolean,
   onClick?: () => void
 }) {
   const [isMounted, setIsMounted] = useState(false);
-  const { clock } = useClock(time);
 
   useEffect(() => {
     setIsMounted(true);
@@ -50,7 +49,7 @@ export default function Clock({
         isEditable ? 'text-gray-200' : 'text-gray-600',
         'relative'
       )}>
-        {clock}
+        {time}
         {isEditable && (
           <PencilIcon
             className={twMerge(

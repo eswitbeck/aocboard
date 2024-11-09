@@ -39,8 +39,13 @@ export const useClock = (
     }
   }, [time]);
 
+  const resetTime = () => {
+    setmilliSeconds(0);
+  }
+
   return {
-    clock: timestamp2Clock(milliseconds)
+    clock: timestamp2Clock(milliseconds),
+    resetTime
   };
 }
 
@@ -202,6 +207,10 @@ export const useDay = (
     time_to_second_star: null
   };
   const clockIsEditable = SubmissionStatus.PRE_START !== status;
+  const {
+    clock,
+    resetTime
+  } = useClock(totalTime);
 
   // TODO ideally done more sophisticatedly with optimistic update
   const wrapFn = (
@@ -210,7 +219,8 @@ export const useDay = (
       day: number,
       year: number,
       leaderboard: number
-    ) => Promise<HTTPLike<any>>
+    ) => Promise<HTTPLike<any>>,
+    extras?: (() => void)[]
   ) => {
     return async () => {
       if (!data) {
@@ -220,6 +230,9 @@ export const useDay = (
         const response = await fn(userId, day, year, leaderboard);
         if (300 > response.status) {
           mutate();
+          if (extras) {
+            extras.forEach(extra => extra());
+          }
         }
       }
     }
@@ -231,7 +244,11 @@ export const useDay = (
     wrapFn(startSubmissionApi),
     wrapFn(pauseSubmissionApi),
     wrapFn(resumeSubmssionApi),
-    wrapFn(undoStarApi)
+    wrapFn(undoStarApi, [() => {
+      if (null === totalTime.time_to_first_star) {
+        resetTime();
+      }
+    }])
   );
 
   return {
@@ -240,5 +257,6 @@ export const useDay = (
     clockIsEditable,
     buttonStatus,
     totalTime,
+    clock
   };
 }

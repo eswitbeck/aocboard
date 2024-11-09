@@ -2,6 +2,7 @@
 import { twMerge } from 'tailwind-merge';
 
 import {
+  useClock,
   useDay,
   SubmissionStatus
 } from '@/hooks/day';
@@ -72,6 +73,7 @@ export default function Container({
     totalTime,
     clockIsEditable,
     buttonStatus,
+    clock
   } = useDay(
     submissionResponse,
     userId,
@@ -96,7 +98,7 @@ export default function Container({
           star_1: !!totalTime.time_to_first_star,
           star_2: !!totalTime.time_to_second_star,
         }} />
-        <Clock time={totalTime} isEditable={clockIsEditable} />
+        <Clock time={clock ?? '00:00:00'} isEditable={clockIsEditable} />
         <Icons isDisabled={iconsDisabled} />
       </div>
       <div /> {/* spacer div */}
