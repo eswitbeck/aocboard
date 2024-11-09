@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { twMerge } from 'tailwind-merge';
 import { useState } from 'react';
 
+import { ClockIcon } from '@heroicons/react/20/solid';
+
 import {
   H1,
   Base,
@@ -240,19 +242,22 @@ const isComplete = (
 ): {
   1: boolean,
   2: boolean,
+  isActive: boolean
 } => {
   const result = dayInfo?.[userId];
 
   if (!result) {
     return {
       1: false,
-      2: false
+      2: false,
+      isActive: false
     };
   }
 
   return {
     1: !!result.star_1_end_time,
-    2: !!result.star_2_end_time
+    2: !!result.star_2_end_time,
+    isActive: !(result.star_1_end_time && result.star_2_end_time)
   };
 }
 
@@ -305,16 +310,21 @@ function DayRow({
         <Link href={`/${leaderboard}/${year}/${day}`}>
           <div className={twMerge(
             "flex justify-center items-center",
-            "px-3 py-1 rounded-lg",
+            "p-1 rounded-lg",
+            "h-10 w-10",
             "group",
-            userCompletions[2]
+            userCompletions[2] 
               ? "bg-gray-600 hover:bg-gray-500"
-              : "bg-gray-500 hover:bg-gray-400"
+              : userCompletions.isActive 
+                ? "bg-orange-500 hover:bg-orange-400"
+                : "bg-gray-500 hover:bg-gray-400"
           )}>
             {isComplete(userId, dayInfo)[1] ? (
               <Base className="text-2xl">
                 ☰
               </Base>
+            ) : isComplete(userId, dayInfo).isActive ? (
+              <ClockIcon className="h-6 w-6 text-gray-700" />
             ) : (
               <Base className="text-2xl text-gray-700">
                 ▶ 
@@ -380,7 +390,7 @@ function DayRow({
                 user={user}
                 size="md"
                 key={id}
-                disabled={!complete[1]}
+                disabled={!complete.isActive}
                 className="outline-gray-800"
                 />
               </div>
