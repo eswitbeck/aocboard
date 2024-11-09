@@ -111,3 +111,9 @@ type LeaderboardInfo = {
     }
   }
 }
+
+type GetSubmissionResponse = HTTPLike<Submssion | null> & {
+  body?: {
+    total_time: TotalTime
+  }
+}

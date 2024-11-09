@@ -1,43 +1,29 @@
-import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { twMerge } from 'tailwind-merge';
 
 import {
-  timestamp2Clock,
-  timestamp2TimeString
-} from '@/shared/utils';
-
-import {
   getUserIdFromAccessToken,
+  getSelf,
   getSubmission,
+
+  claimStar,
+  startSubmission,
   pauseSubmission,
   resumeSubmission,
+
   restartSubmission,
-  completeSubmission,
+
   updatePause,
   updateStartTime,
   updateStarTime,
   getLanguages,
   updateLanguage,
   updateSubmission,
-  getSelf
 } from '@/server/Main';
 
-import {
-  Base,
-  H1,
-  H3,
-  A
-} from '@/components/core/text';
-
-import Avatar from '@/components/shared/Avatar';
-
-import PreStartPage from '@/components/day/PreStartPage';
-import ActivePage from '@/components/day/ActivePage';
-import PausedPage from '@/components/day/PausedPage';
-import CompletePage from '@/components/day/CompletePage';
-
+import Layout from '@/components/day/Layout';
+import Container from '@/components/day/Container';
 import RedirectLogin from '@/app/_components/RedirectLogin';
 
 export default async function SubmissionPage({
@@ -73,8 +59,6 @@ export default async function SubmissionPage({
     return <RedirectLogin />;
   }
 
-  const currentUser = currentUserResp.body!.data;
-
   if (submissionResponse.status === 403) {
     return (
       <div>
@@ -88,69 +72,32 @@ export default async function SubmissionPage({
     );
   }
 
-  if (submissionResponse.status === 404) {
-    return (
-      <>
-        <PreStartPage
-          currentUser={currentUser}
-          userId={userId}
-          day={day}
-          year={year}
-          leaderboard={leaderboard}
-        />
-      </>
-    );
-  }
-
-  if (submissionResponse.status >= 400) {
+  if (submissionResponse.status >= 400 && submissionResponse.status !== 404) {
     return <ErrorPage error={submissionResponse.error} />;
   }
 
-  const submission = submissionResponse.body?.data!;
-  // @ts-ignore -- dangerous ignore here
-  const totalTime = submissionResponse.body?.total_time!;
-
-  const isComplete = submission.star_2_end_time !== null;
-  const isPaused = !Object.hasOwn(totalTime, 'lastTimestamp');
-
-  if (isComplete) {
-    return (
-      <CompletePage
-        currentUser={currentUser}
-        totalTime={totalTime}
-        submission={submission}
-        userId={userId}
-        day={day}
-        year={year}
-        leaderboard={leaderboard}
-      />
-    );
-  }
-  if (!isPaused) {
-    return (
-      <ActivePage
-        currentUser={currentUser}
-        time={time}
-        totalTime={totalTime}
-        submission={submission}
-        userId={userId}
-        day={day}
-        year={year}
-        leaderboard={leaderboard}
-      />
-    );
-  }
+  const currentUser = currentUserResp.body!.data;
 
   return (
-    <PausedPage
+    <Layout
       currentUser={currentUser}
-      totalTime={totalTime}
-      submission={submission}
-      userId={userId}
+      leaderboard={leaderboard}
       day={day}
       year={year}
-      leaderboard={leaderboard}
-    />
+    >
+      <Container
+        submissionResponse={submissionResponse}
+        userId={userId}
+        day={day}
+        year={year}
+        leaderboard={leaderboard}
+        getSubmission={getSubmission}
+        claimStarApi={claimStar}
+        startSubmissionApi={startSubmission}
+        pauseSubmissionApi={pauseSubmission}
+        resumeSubmssionApi={resumeSubmission}
+      />
+    </Layout>
   );
 }
 

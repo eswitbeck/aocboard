@@ -15,7 +15,7 @@ export default function Layout({
   year,
   children
 }: {
-  children: React.ReactNode,
+  children?: React.ReactNode,
   currentUser: {
     display_name: string,
     avatar_color: AvatarColor,

@@ -157,7 +157,7 @@ export const getSubmission = async (
   day: number,
   year: number,
   leaderboardId: number
-): Promise<HTTPLike<Submission | null> & { body?: { total_time: TotalTime; }}> => {
+): Promise<GetSubmissionResponse> => {
   if (!userId) {
     return { status: 401 };
   }
@@ -433,7 +433,7 @@ export const resumeSubmission = async (
   }
 }
 
-export const completeSubmission = async (
+export const claimStar = async (
   userId: number | null,
   day: number,
   year: number,
