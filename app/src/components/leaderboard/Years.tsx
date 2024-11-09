@@ -319,7 +319,7 @@ function DayRow({
                 ? "bg-orange-500 hover:bg-orange-400"
                 : "bg-gray-500 hover:bg-gray-400"
           )}>
-            {isComplete(userId, dayInfo)[1] ? (
+            {isComplete(userId, dayInfo)[2] ? (
               <Base className="text-2xl">
                 ☰
               </Base>

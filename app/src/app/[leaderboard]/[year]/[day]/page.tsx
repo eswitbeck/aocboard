@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { twMerge } from 'tailwind-merge';
+import { revalidatePath } from 'next/cache';
 
 import {
   getUserIdFromAccessToken,
@@ -24,6 +25,20 @@ import {
 import Layout from '@/components/day/Layout';
 import Container from '@/components/day/Container';
 import RedirectLogin from '@/app/_components/RedirectLogin';
+
+const wrapFn = (
+  fn: (...arg0: any[]) => Promise<HTTPLike<any>>,
+  leaderboard: number
+) => {
+  return async (...args: any) => {
+    'use server';
+    const response = await fn(...args);
+    if (![400, 401, 403, 500].includes(response.status)) {
+      revalidatePath(`/${leaderboard}`);
+    }
+    return response;
+  } 
+}
 
 export default async function SubmissionPage({
   params: {
@@ -91,11 +106,11 @@ export default async function SubmissionPage({
         year={year}
         leaderboard={leaderboard}
         getSubmission={getSubmission}
-        claimStarApi={claimStar}
-        startSubmissionApi={startSubmission}
-        pauseSubmissionApi={pauseSubmission}
-        resumeSubmssionApi={resumeSubmission}
-        undoStarApi={undoStar}
+        claimStarApi={wrapFn(claimStar, leaderboard)}
+        startSubmissionApi={wrapFn(startSubmission, leaderboard)}
+        pauseSubmissionApi={wrapFn(pauseSubmission, leaderboard)}
+        resumeSubmssionApi={wrapFn(resumeSubmission, leaderboard)}
+        undoStarApi={wrapFn(undoStar, leaderboard)}
       />
     </Layout>
   );
