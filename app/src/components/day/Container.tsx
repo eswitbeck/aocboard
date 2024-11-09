@@ -1,5 +1,6 @@
 'use client';
 import { twMerge } from 'tailwind-merge';
+import { useState } from 'react';
 
 import {
   useClock,
@@ -11,6 +12,15 @@ import Buttons from './Buttons';
 import Clock from './Clock';
 import Icons from './Icons';
 import Stars from './Stars';
+
+enum ModalState {
+  None,
+  Note,
+  Link,
+  Copy,
+  Language,
+  Clock
+}
 
 export default function Container({
   submissionResponse,
@@ -88,8 +98,22 @@ export default function Container({
     undoStarApi
   );
 
+  const [modal, setModal] = useState(false);
+
+
   return (
     <>
+      <button onClick={() => setModal(!modal)}>Open Modal</button>
+      <div
+        className={twMerge(
+          "absolute left-0 w-full h-[100vh] z-20",
+          "bg-white rounded-t-2xl shadow-2xl",
+          "transition-all duration-300",
+        )}
+        style={{
+          top: modal ? '25vh' : '100vh',
+        }}
+      />
       <div className={twMerge(
         "flex flex-col gap-2",
         "w-full py-4"

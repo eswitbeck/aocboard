@@ -1,4 +1,5 @@
 import './globals.css';
+import { twMerge } from 'tailwind-merge';
 
 export const metadata = {
   title: 'AoC Boards'
@@ -12,7 +13,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className="bg-gray-900 text-gray-200"
+        className={twMerge(
+          "bg-gray-900 text-gray-200",
+          "overflow-hidden relative"
+        )}
       >
         {children}
       </body>
