@@ -42,7 +42,9 @@ export default function Buttons({
           "p-2 rounded-2xl",
           disabled.undo ? "bg-gray-800" : "bg-gray-700"
         )}
-        onClick={functions.undo}
+        onClick={disabled.undo
+          ? undefined
+          : () => functions.undo()}
       >
         <ArrowUturnLeftIcon
           className={twMerge(
@@ -58,7 +60,10 @@ export default function Buttons({
           "relative",
           disabled.star ? "bg-gray-800" : "bg-gray-600"
         )}
-        onClick={functions.star}
+        onClick={disabled.star
+          ? undefined
+          : () => functions.star()
+        }
       >
         {disabled.star ? (
           <StarIcon
@@ -89,7 +94,9 @@ export default function Buttons({
           "p-2 rounded-2xl",
           disabled.pause ? "bg-gray-800" : "bg-gray-700"
         )}
-        onClick={functions.pause}
+        onClick={disabled.pause
+          ? undefined
+          : () => functions.pause()}
       >
         {functions.isPause ? (
           disabled.pause ? (

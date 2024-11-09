@@ -2,8 +2,12 @@ import { twMerge } from 'tailwind-merge';
 import { revalidatePath } from 'next/cache';
 
 import {
-  startSubmission,
+  restartSubmission
 } from '@/server/Main';
+
+import {
+  useClock
+} from '@/hooks/day';
  
 import Buttons from './Buttons';
 import Clock from './Clock';
@@ -12,8 +16,10 @@ import Layout from './Layout';
 import Stars from './Stars';
 import StartButton from './StartButton';
 
-export default function PreStartPage({
+export default function ActivePage({
   currentUser,
+  totalTime,
+  submission,
   userId,
   day,
   year,
@@ -23,13 +29,15 @@ export default function PreStartPage({
     display_name: string,
     avatar_color: AvatarColor
   },
+  totalTime: TotalTime,
+  submission: Submission | null,
   userId: number | null,
   day: number,
   year: number,
   leaderboard: number
 }) {
 
-  const fillerFn = async() => { 'use server'; return; }
+  const fillerFn = async() => { 'use server'; return 0; }
   return (
     <Layout
       currentUser={currentUser}
@@ -42,45 +50,26 @@ export default function PreStartPage({
         "w-full py-4"
       )}>
         <Stars stars={{
-          star_1: false,
-          star_2: false
+          star_1: true,
+          star_2: true,
         }} />
-        <Clock time={{
-          totalTime: 0,
-          time_to_first_star: null,
-          time_to_second_star: null
-        }} />
-
+        <Clock time={totalTime} isEditable />
         <Icons 
-          isDisabled={true}
+          isDisabled={false}
         />
       </div>
       <div /> {/* spacer div */}
       <Buttons 
         disabled={{
-          undo: true,
+          undo: false,
           star: true,
-          pause: false,
+          pause: true,
         }}
         functions={{
           undo: fillerFn,
           star: fillerFn,
           isPause: false,
-          pause: async () => {
-            'use server';
-            const resp = await startSubmission(
-              userId,
-              day,
-              year,
-              leaderboard
-            );
-            if (500 === resp.status) {
-              console.error(resp.error);
-              return;
-            } 
-            revalidatePath('/');
-            return 0;
-          }
+          pause: fillerFn,
         }}
       />
     </Layout>

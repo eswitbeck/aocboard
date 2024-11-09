@@ -262,6 +262,7 @@ export const startSubmission = async (
     return { status: 401 };
   }
 
+
   const fn = async (client: pg.PoolClient) => {
     const { rows: [participant] } = await client.query(
       `SELECT
@@ -2112,3 +2113,4 @@ export const getSelf = async (
 
 // update account (link, password??, display name)
 // get account data
+//

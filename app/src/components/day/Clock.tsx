@@ -1,4 +1,8 @@
+'use client';
 import { twMerge } from 'tailwind-merge';
+import { useEffect, useState } from 'react';
+
+import { useClock } from '@/hooks/day';
 
 import {
   PencilIcon
@@ -9,14 +13,26 @@ import {
 } from '../core/text';
 
 export default function Clock({
-  timeString,
+  time,
   isEditable,
   onClick
 }: {
-  timeString: string,
+  time: TotalTime,
   isEditable?: boolean,
   onClick?: () => void
 }) {
+  const [isMounted, setIsMounted] = useState(false);
+  const { clock } = useClock(time);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <div
       className={twMerge(
@@ -34,7 +50,7 @@ export default function Clock({
         isEditable ? 'text-gray-200' : 'text-gray-600',
         'relative'
       )}>
-        {timeString}
+        {clock}
         {isEditable && (
           <PencilIcon
             className={twMerge(
