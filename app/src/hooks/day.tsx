@@ -73,7 +73,8 @@ const getButtonStatus = (
   claimStar: () => Promise<void>,
   beginSubmission: () => Promise<void>,
   pauseSubmission: () => Promise<void>,
-  resumeSubmission: () => Promise<void>
+  resumeSubmission: () => Promise<void>,
+  undoStar: () => Promise<void>
 ) => {
   const fillerFn = async () => {};
   return {
@@ -97,7 +98,7 @@ const getButtonStatus = (
         pause: false
       },
       functions: {
-        undo: fillerFn, // TODO
+        undo: undoStar,
         star: claimStar,
         pause: pauseSubmission,
         isPause: true
@@ -110,7 +111,7 @@ const getButtonStatus = (
         pause: false
       },
       functions: {
-        undo: fillerFn, // TODO
+        undo: undoStar,
         star: fillerFn,
         pause: resumeSubmission,
         isPause: false,
@@ -123,7 +124,7 @@ const getButtonStatus = (
         pause: true
       },
       functions: {
-        undo: fillerFn, // TODO
+        undo: undoStar,
         star: fillerFn,
         pause: fillerFn,
         isPause: false
@@ -167,7 +168,13 @@ export const useDay = (
     day: number,
     year: number,
     leaderboard: number
-  ) => Promise<HTTPLike<{ time: number }>>
+  ) => Promise<HTTPLike<{ time: number }>>,
+  undoStarApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number
+  ) => Promise<HTTPLike<void>>
 ) => {
   const {
     data,
@@ -223,7 +230,8 @@ export const useDay = (
     wrapFn(claimStarApi),
     wrapFn(startSubmissionApi),
     wrapFn(pauseSubmissionApi),
-    wrapFn(resumeSubmssionApi)
+    wrapFn(resumeSubmssionApi),
+    wrapFn(undoStarApi)
   );
 
   return {

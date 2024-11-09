@@ -21,7 +21,8 @@ export default function Container({
   startSubmissionApi,
   claimStarApi,
   pauseSubmissionApi,
-  resumeSubmssionApi
+  resumeSubmssionApi,
+  undoStarApi
 }: {
   submissionResponse: GetSubmissionResponse;
   userId: number | null;
@@ -58,6 +59,12 @@ export default function Container({
     year: number,
     leaderboard: number
   ) => Promise<HTTPLike<{ time: number }>>;
+  undoStarApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number
+  ) => Promise<HTTPLike<void>>;
 }) {
   const {
     status,
@@ -75,7 +82,8 @@ export default function Container({
     startSubmissionApi,
     claimStarApi,
     pauseSubmissionApi,
-    resumeSubmssionApi
+    resumeSubmssionApi,
+    undoStarApi
   );
 
   return (

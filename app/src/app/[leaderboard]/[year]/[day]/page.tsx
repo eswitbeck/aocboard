@@ -11,8 +11,7 @@ import {
   startSubmission,
   pauseSubmission,
   resumeSubmission,
-
-  restartSubmission,
+  undoStar,
 
   updatePause,
   updateStartTime,
@@ -96,6 +95,7 @@ export default async function SubmissionPage({
         startSubmissionApi={startSubmission}
         pauseSubmissionApi={pauseSubmission}
         resumeSubmssionApi={resumeSubmission}
+        undoStarApi={undoStar}
       />
     </Layout>
   );

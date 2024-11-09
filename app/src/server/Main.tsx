@@ -497,12 +497,12 @@ export const claimStar = async (
   }
 }
 
-export const restartSubmission = async (
+export const undoStar = async (
   userId: number | null,
   day: number,
   year: number,
   leaderboardId: number
-): Promise<HTTPLike<Submission>> => {
+): Promise<HTTPLike<void>> => {
   if (!userId) {
     return { status: 401 };
   }
@@ -510,25 +510,87 @@ export const restartSubmission = async (
   const pool = getPool();
   // check permissions
   const fn = async (client: pg.PoolClient) => {
-    const { rows: [s_Submission] } = await client.query(
-      `DELETE FROM Submission
+    const { rows: [stageResult] } = await client.query(
+      `SELECT
+       CASE
+         WHEN s.star_2_end_time IS NOT NULL THEN 'star_2'
+         WHEN s.star_1_end_time IS NOT NULL THEN 'star_1'
+         ELSE 'started'
+       END AS stage
+       FROM Submission s
        WHERE user_id = $1
         AND day = $2
         AND year = $3
-        AND leaderboard_id = $4
-       RETURNING *;`,
+        AND leaderboard_id = $4;`,
       [userId, day, year, leaderboardId]
     );
 
-    if (!s_Submission) {
+    if (!stageResult) {
       return { status: 404, error: 'no submission' };
     }
 
-    updateScores(client, leaderboardId, year, day);
+    const { stage } = stageResult;
+    
+    switch (stage) {
+      case 'star_2':
+        const { rows: [s_Submission_star2] } = await client.query(
+          `UPDATE Submission
+           SET star_2_end_time = NULL
+           WHERE user_id = $1
+            AND day = $2
+            AND year = $3
+            AND leaderboard_id = $4
+           RETURNING *;`,
+          [userId, day, year, leaderboardId]
+        );
 
-    return {
-      status: 204,
-    };
+        updateScores(client, leaderboardId, year, day);
+
+        return {
+          status: 200,
+        };
+
+      case 'star_1':
+        const { rows: [s_Submission_star1] } = await client.query(
+          `UPDATE Submission
+           SET star_1_end_time = NULL
+           WHERE user_id = $1
+            AND day = $2
+            AND year = $3
+            AND leaderboard_id = $4
+           RETURNING *;`,
+          [userId, day, year, leaderboardId]
+        );
+
+        updateScores(client, leaderboardId, year, day);
+
+        return {
+          status: 200,
+        };
+
+      case 'started':
+        const { rows: [s_Submission] } = await client.query(
+          `DELETE FROM Submission
+           WHERE user_id = $1
+            AND day = $2
+            AND year = $3
+            AND leaderboard_id = $4
+           RETURNING *;`,
+          [userId, day, year, leaderboardId]
+        );
+
+        updateScores(client, leaderboardId, year, day);
+
+        return {
+          status: 204,
+        };
+
+      default:
+        return {
+          status: 400,
+          error: 'invalid stage'
+        };
+    }
   }
 
   try {
@@ -1907,6 +1969,10 @@ async function updateScores (
          ${leaderboardId}
        )`)
     .join(', ');
+
+  if (!insertionClause) {
+    return;
+  }
 
   await client.query(
     `INSERT INTO Submission
