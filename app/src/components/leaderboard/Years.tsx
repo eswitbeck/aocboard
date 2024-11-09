@@ -390,7 +390,7 @@ function DayRow({
                 user={user}
                 size="md"
                 key={id}
-                disabled={!complete.isActive}
+                disabled={!complete[1] && !complete.isActive}
                 className="outline-gray-800"
                 />
               </div>
