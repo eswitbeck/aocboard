@@ -40,7 +40,7 @@ export default function Buttons({
         className={twMerge(
           "flex justify-center items-center",
           "p-2 rounded-2xl",
-          disabled.undo ? "bg-gray-800" : "bg-gray-700"
+          disabled.undo ? "bg-gray-800" : "bg-gray-700 cursor-pointer"
         )}
         onClick={disabled.undo
           ? undefined
@@ -58,7 +58,7 @@ export default function Buttons({
           "flex justify-center items-center",
           "p-2 rounded-3xl",
           "relative",
-          disabled.star ? "bg-gray-800" : "bg-gray-600"
+          disabled.star ? "bg-gray-800" : "bg-gray-600 cursor-pointer"
         )}
         onClick={disabled.star
           ? undefined
@@ -92,7 +92,7 @@ export default function Buttons({
         className={twMerge(
           "flex justify-center items-center",
           "p-2 rounded-2xl",
-          disabled.pause ? "bg-gray-800" : "bg-gray-700"
+          disabled.pause ? "bg-gray-800" : "bg-gray-700 cursor-pointer"
         )}
         onClick={disabled.pause
           ? undefined

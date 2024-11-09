@@ -23,7 +23,7 @@ export default function Icons({
 }) {
   const divClasses = twMerge(
     "p-2 rounded-2xl",
-    isDisabled ? "bg-gray-700" : "bg-gray-600"
+    isDisabled ? "bg-gray-700" : "bg-gray-600 cursor-pointer"
   );
   const classes = twMerge(
     "w-8 h-8",
