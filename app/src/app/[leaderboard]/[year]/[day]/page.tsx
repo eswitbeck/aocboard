@@ -41,19 +41,16 @@ const wrapFn = (
 }
 
 export default async function SubmissionPage({
-  params: {
-    leaderboard,
-    year,
-    day
-  }
+  params
 }: {
-  params: {
+  params: Promise<{
     leaderboard: number,
     year: number,
     day: number
-  }
+  }>
 }) {
   const time = new Date();
+  const { leaderboard, year, day } = await params;
   if (year < 2015 || year > time.getFullYear() || day < 1 || day > 25) {
     redirect(`/${leaderboard}`);
   }

@@ -16,10 +16,11 @@ import {
 } from '@/app/_components/AuthButtons';
 
 export default async function Page({
-  searchParams: { redirect }
+  searchParams
 }: {
-  searchParams: { redirect?: string }
+  searchParams: Promise<{ redirect?: string }>
 }) {
+  const { redirect } = await searchParams;
   const userid = await getUserIdFromAccessToken();
   const isLoggedIn = userid !== null;
   if (!isLoggedIn) {

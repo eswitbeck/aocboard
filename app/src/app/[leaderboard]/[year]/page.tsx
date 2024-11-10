@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation';
-export default function Page({
-  params: { leaderboard }
+export default async function Page({
+  params
 }: {
-  params: { leaderboard: number }
+  params: Promise<{ leaderboard: number }>
 }) {
+  const { leaderboard } = await params;
   redirect(`/${leaderboard}`);
 }

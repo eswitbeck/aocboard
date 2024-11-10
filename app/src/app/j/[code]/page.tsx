@@ -8,12 +8,13 @@ import {
 import RedirectLogin from '@/app/_components/RedirectLogin';
 
 export default async function JoinPage({
-  params: { code }
+  params
 }: {
-  params: {
+  params: Promise<{
     code: string;
-  };
+  }>;
 }) {
+  const { code } = await params;
   const userId = await getUserIdFromAccessToken();
   const result = await joinLeaderboard(userId, code);
 

@@ -23,10 +23,11 @@ import {
 
 
 export default async function Page({
-  params: { leaderboard }
+  params
 }: {
-  params: { leaderboard: number }
+  params: Promise<{ leaderboard: number }>
 }) {
+  const leaderboard = (await params).leaderboard;
   const userId = await getUserIdFromAccessToken();
 
   const usersResp = await getUsersByLeaderboard(

@@ -15,7 +15,7 @@ export default function RootLayout({
       <body
         className={twMerge(
           "bg-gray-900 text-gray-200",
-          "overflow-hidden relative"
+          "relative"
         )}
       >
         {children}

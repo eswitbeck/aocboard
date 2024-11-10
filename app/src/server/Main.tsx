@@ -1319,7 +1319,8 @@ export const getLeaderboardInfo = async (
 // refresh token
 export async function refreshAccessToken() {
   const time = new Date();
-  const refreshToken = cookies().get('aocboardAuthorization');
+  const cookieContent = await cookies();
+  const refreshToken = cookieContent.get('aocboardAuthorization');
   if (!refreshToken) {
     return { status: 401 };
   }
@@ -1344,7 +1345,7 @@ export async function refreshAccessToken() {
   }
 
   const newAccessToken = generateAccessToken(user_id);
-  cookies().set('aocboardAccessToken', newAccessToken, {
+  cookieContent.set('aocboardAccessToken', newAccessToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
@@ -1390,7 +1391,8 @@ function generateAccessToken(userid: number): string {
 // should be on cookie, not token
 export async function getUserIdFromAccessToken(
 ): Promise<number | null> {
-  const accessToken = cookies().get('aocboardAccessToken');
+  const cookieContent = await cookies();
+  const accessToken = cookieContent.get('aocboardAccessToken');
   if (!accessToken) {
     return null;
   }
@@ -1477,13 +1479,15 @@ export async function login(username: string, password: string) {
   const refreshToken = await generateRefreshToken(id);
   const accessToken = generateAccessToken(id);
 
-  cookies().set('aocboardAuthorization', refreshToken, {
+  const cookieContent = await cookies();
+
+  cookieContent.set('aocboardAuthorization', refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
     expires: time.getTime() + 1000 * 60 * 60 * 24 * 7
   });
-  cookies().set('aocboardAccessToken', accessToken, {
+  cookieContent.set('aocboardAccessToken', accessToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
@@ -1493,13 +1497,14 @@ export async function login(username: string, password: string) {
 
 export async function logout() {
   const time = new Date();
-  cookies().set('aocboardAuthorization', '', {
+  const cookieContent = await cookies();
+  cookieContent.set('aocboardAuthorization', '', {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
     expires: time.getTime()
   });
-  cookies().set('aocboardAccessToken', '', {
+  cookieContent.set('aocboardAccessToken', '', {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
