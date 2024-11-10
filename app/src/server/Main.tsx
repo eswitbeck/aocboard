@@ -1125,7 +1125,7 @@ export const updateSubmission = async (
          AND year = $4
          AND leaderboard_id = $5
        RETURNING ${field};`,
-      [value, userId, day, year, leaderboardId]
+      [value || null, userId, day, year, leaderboardId]
     );
 
     return {

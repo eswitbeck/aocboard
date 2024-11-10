@@ -108,6 +108,9 @@ export default async function SubmissionPage({
         pauseSubmissionApi={wrapFn(pauseSubmission, leaderboard)}
         resumeSubmssionApi={wrapFn(resumeSubmission, leaderboard)}
         undoStarApi={wrapFn(undoStar, leaderboard)}
+        languages={(await getLanguages()).body!.data}
+        updateLanguageApi={wrapFn(updateLanguage, leaderboard)}
+        updateSubmission={wrapFn(updateSubmission, leaderboard)}
       />
     </Layout>
   );

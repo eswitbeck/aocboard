@@ -179,7 +179,22 @@ export const useDay = (
     day: number,
     year: number,
     leaderboard: number
-  ) => Promise<HTTPLike<void>>
+  ) => Promise<HTTPLike<void>>,
+  updateLanguageApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number,
+    languageId: number
+  ) => Promise<HTTPLike<{ id: number }>>,
+  updateSubmission: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number,
+    field: 'link' | 'note',
+    value: string
+  ) => Promise<HTTPLike<{ value: string }>>,
 ) => {
   const {
     data,
@@ -218,16 +233,17 @@ export const useDay = (
       userId: number,
       day: number,
       year: number,
-      leaderboard: number
+      leaderboard: number,
+      ...args: any[]
     ) => Promise<HTTPLike<any>>,
     extras?: (() => void)[]
   ) => {
-    return async () => {
+    return async (...args: any[]) => {
       if (!data) {
         return;
       }
       if (userId) {
-        const response = await fn(userId, day, year, leaderboard);
+        const response = await fn(userId, day, year, leaderboard, ...args);
         if (300 > response.status) {
           mutate();
           if (extras) {
@@ -257,6 +273,14 @@ export const useDay = (
     clockIsEditable,
     buttonStatus,
     totalTime,
-    clock
+    clock,
+    updateLanguage: wrapFn(updateLanguageApi),
+    currentLanguage: data?.body?.data!.language ?? null,
+    note: data?.body?.data!.note ?? null,
+    updateNote: (note: string) =>
+      wrapFn(updateSubmission)('note', note),
+    link: data?.body?.data!.link ?? null,
+    updateLink: (link: string) =>
+      wrapFn(updateSubmission)('link', link)
   };
 }

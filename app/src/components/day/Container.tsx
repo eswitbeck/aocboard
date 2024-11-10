@@ -3,7 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import { useState } from 'react';
 
 import {
-  XMarkIcon
+  CheckIcon
 } from '@heroicons/react/20/solid';
 
 import {
@@ -22,6 +22,12 @@ import Buttons from './Buttons';
 import Clock from './Clock';
 import Icons from './Icons';
 import Stars from './Stars';
+
+import LinkModal from './modals/Link';
+import NoteModal from './modals/Note';
+import LanguageModal from './modals/Language';
+
+import Modal from './Modal';
 
 enum ModalState {
   None,
@@ -43,7 +49,10 @@ export default function Container({
   claimStarApi,
   pauseSubmissionApi,
   resumeSubmssionApi,
-  undoStarApi
+  undoStarApi,
+  languages,
+  updateLanguageApi,
+  updateSubmission
 }: {
   submissionResponse: GetSubmissionResponse;
   userId: number | null;
@@ -86,6 +95,24 @@ export default function Container({
     year: number,
     leaderboard: number
   ) => Promise<HTTPLike<void>>;
+
+  languages: { id: number, name: string }[];
+  updateLanguageApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number,
+    languageId: number
+  ) => Promise<HTTPLike<{ id: number }>>;
+
+  updateSubmission: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number,
+    field: 'link' | 'note',
+    value: string
+  ) => Promise<HTTPLike<{ value: string }>>;
 }) {
   const {
     status,
@@ -93,7 +120,13 @@ export default function Container({
     totalTime,
     clockIsEditable,
     buttonStatus,
-    clock
+    clock,
+    updateLanguage,
+    currentLanguage,
+    note,
+    updateNote,
+    link,
+    updateLink
   } = useDay(
     submissionResponse,
     userId,
@@ -105,13 +138,14 @@ export default function Container({
     claimStarApi,
     pauseSubmissionApi,
     resumeSubmssionApi,
-    undoStarApi
+    undoStarApi,
+    updateLanguageApi,
+    updateSubmission
   );
 
   const [modalState, setModalState] = useState<ModalState>(ModalState.None);
 
   const close = () => setModalState(ModalState.None);
-
 
   return (
     <>
@@ -133,33 +167,25 @@ export default function Container({
           </H3>
         </div>
       </Modal>
-      <Modal isOpen={ModalState.Language === modalState} close={close}>
-        <div className={twMerge(
-           "flex flex-col gap-4",
-        )}>
-          <H3 className="text-3xl !my-0">
-            Add Language
-          </H3>
-        </div>
-      </Modal>
-      <Modal isOpen={ModalState.Link === modalState} close={close}>
-        <div className={twMerge(
-           "flex flex-col gap-4",
-        )}>
-          <H3 className="text-3xl !my-0">
-            Add link
-          </H3>
-        </div>
-      </Modal>
-      <Modal isOpen={ModalState.Note === modalState} close={close}>
-        <div className={twMerge(
-           "flex flex-col gap-4",
-        )}>
-          <H3 className="text-3xl !my-0">
-            Add note
-          </H3>
-        </div>
-      </Modal>
+      <LanguageModal
+        isOpen={ModalState.Language === modalState}
+        close={close}
+        currentLanguage={currentLanguage}
+        languages={languages}
+        updateLanguage={updateLanguage}
+      />
+      <LinkModal
+        isOpen={ModalState.Link === modalState}
+        close={close}
+        currentLink={link}
+        updateLink={updateLink}
+      />
+      <NoteModal
+        isOpen={ModalState.Note === modalState}
+        close={close}
+        currentNote={note}
+        updateNote={updateNote}
+      />
       <div className={twMerge(
         "flex flex-col gap-2",
         "w-full py-4"
@@ -187,53 +213,5 @@ export default function Container({
         functions={buttonStatus.functions}
       />
     </>
-  );
-}
-
-function Modal({
-  children,
-  isOpen,
-  close
-}: {
-  children?: React.ReactNode,
-  isOpen: boolean,
-  close: () => void
-}) {
-  return (
-      <div
-        className={twMerge(
-          "absolute left-0 top-0 w-full h-[100vh]",
-          "overflow-hidden",
-          "pointer-events-none",
-        )}
-      >
-        <div
-          className={twMerge(
-            "absolute left-0 w-full h-full",
-            "bg-gray-600",
-            "rounded-t-xl",
-            "z-20",
-            "transition-all duration-300",
-            "pointer-events-auto",
-            "p-4",
-          )}
-          style={{
-            top: isOpen ? '25%' : '100%',
-          }}
-        >
-          <button
-            className={twMerge(
-              "absolute right-4 top-4",
-              "bg-gray-700",
-              "p-1 rounded-xl",
-              "hover:bg-gray-500",
-            )}
-            onClick={close}
-          >
-            <XMarkIcon className="w-6 h-6 text-gray-200" />
-          </button>
-          {children}
-        </div>
-      </div>
   );
 }
