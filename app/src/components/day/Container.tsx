@@ -26,6 +26,7 @@ import Stars from './Stars';
 import LinkModal from './modals/Link';
 import NoteModal from './modals/Note';
 import LanguageModal from './modals/Language';
+import TimeModal from './modals/Time';
 
 import Modal from './Modal';
 
@@ -126,7 +127,8 @@ export default function Container({
     note,
     updateNote,
     link,
-    updateLink
+    updateLink,
+    times
   } = useDay(
     submissionResponse,
     userId,
@@ -149,15 +151,14 @@ export default function Container({
 
   return (
     <>
-      <Modal isOpen={ModalState.Clock === modalState} close={close}>
-        <div className={twMerge(
-           "flex flex-col gap-4",
-        )}>
-          <H3 className="text-3xl !my-0">
-            Set Times
-          </H3>
-        </div>
-      </Modal>
+      <TimeModal
+        isOpen={ModalState.Clock === modalState}
+        close={close}
+        times={times}
+        updateStar={() => {}}
+        updateStartTime={() => {}}
+        updatePause={() => {}}
+      />
       <Modal isOpen={ModalState.Copy === modalState} close={close}>
         <div className={twMerge(
            "flex flex-col gap-4",

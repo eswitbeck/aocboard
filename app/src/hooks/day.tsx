@@ -138,6 +138,68 @@ const getButtonStatus = (
   }[status];
 }
 
+const getTimesBuffer = (
+  startTime: string | null,
+  star_1_time: string | null,
+  star_2_time: string | null,
+  pauses: {
+    start: string;
+    end: string | null;
+    start_id: number;
+    end_id: number | null;
+  }[]
+) => {
+  if (!startTime) {
+    return null;
+  }
+
+  const timesBuffer = [{
+    timestamp: startTime,
+    type: 'start'
+  }];
+
+  const processedPauses = [];
+  for (let i = 0; i < pauses.length; i++) {
+    const pause = pauses[i];
+    processedPauses.push({
+      timestamp: pause.start,
+      type: 'pause',
+      id: pause.start_id
+    });
+    if (pause.end) {
+      processedPauses.push({
+        timestamp: pause.end,
+        type: 'resume',
+        id: pause.end_id
+      });
+    }
+  }
+
+  if (star_1_time) {
+    timesBuffer.push({
+      timestamp: star_1_time,
+      type: 'star_1'
+    });
+  }
+
+  if (star_2_time) {
+    timesBuffer.push({
+      timestamp: star_2_time,
+      type: 'star_2'
+    });
+  }
+
+  return timesBuffer
+    .concat(processedPauses)
+    .sort((a, b) => {
+      return a.timestamp < b.timestamp ? -1 : 1;
+    }) as {
+      timestamp: string;
+      type: 'start' | 'pause' | 'resume' | 'star_1' | 'star_2';
+      id?: number;
+    }[];
+}
+
 export const useDay = (
   submissionResponse: GetSubmissionResponse,
   userId: number | null,
@@ -216,6 +278,27 @@ export const useDay = (
   const status = getStatus(data);
   const iconsDisabled = SubmissionStatus.PRE_START === status;
 
+  const timesBuffer = 
+    !data
+      ? null
+      : getTimesBuffer(
+          data?.body?.data?.start_time ?? null,
+          data?.body?.data?.star_1_end_time ?? null,
+          data?.body?.data?.star_2_end_time ?? null,
+          (data?.body?.data?.pauses ?? [])
+            .map((pause: {
+              start_time: string | null;
+              end_time: string | null;
+              start_id: number;
+              end_id: number | null;
+            }) => ({
+                start: pause.start_time,
+                end: pause.end_time,
+                start_id: pause.start_id,
+                end_id: pause.end_id
+              }))
+        );
+
   const totalTime = data?.body?.total_time ?? {
     totalTime: 0,
     time_to_first_star: null,
@@ -273,6 +356,7 @@ export const useDay = (
     clockIsEditable,
     buttonStatus,
     totalTime,
+    times: timesBuffer,
     clock,
     updateLanguage: wrapFn(updateLanguageApi),
     currentLanguage: data?.body?.data!.language ?? null,
