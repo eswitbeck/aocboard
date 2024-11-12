@@ -55,7 +55,8 @@ export default function Container({
   updateLanguageApi,
   updateSubmission,
   updateStartTimeApi,
-  updateStarTimeApi
+  updateStarTimeApi,
+  updatePauseApi
 }: {
   submissionResponse: GetSubmissionResponse;
   userId: number | null;
@@ -132,6 +133,11 @@ export default function Container({
     time: string,
     star: 'star_1' | 'star_2'
   ) => Promise<HTTPLike<{ timestamp: string }>>;
+  updatePauseApi: (
+    userId: number,
+    pauseId: number,
+    time: string
+  ) => Promise<HTTPLike<void>>;
 }) {
   const {
     status,
@@ -148,7 +154,8 @@ export default function Container({
     updateLink,
     times,
     updateStartTime,
-    updateStarTime
+    updateStarTime,
+    updatePause
   } = useDay(
     submissionResponse,
     userId,
@@ -164,7 +171,8 @@ export default function Container({
     updateLanguageApi,
     updateSubmission,
     updateStartTimeApi,
-    updateStarTimeApi
+    updateStarTimeApi,
+    updatePauseApi
   );
 
   const [modalState, setModalState] = useState<ModalState>(ModalState.None);
@@ -179,7 +187,7 @@ export default function Container({
         times={times}
         updateStar={updateStarTime}
         updateStartTime={updateStartTime}
-        updatePause={() => {}}
+        updatePause={updatePause}
       />
       <Modal isOpen={ModalState.Copy === modalState} close={close}>
         <div className={twMerge(

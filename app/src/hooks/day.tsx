@@ -283,7 +283,12 @@ export const useDay = (
     leaderboard: number,
     timestamp: string,
     star: 'star_1' | 'star_2'
-  ) => Promise<HTTPLike<{ timestamp: string }>>
+  ) => Promise<HTTPLike<{ timestamp: string }>>,
+  updatePauseApi: (
+    userId: number,
+    pauseId: number,
+    time: string,
+  ) => Promise<HTTPLike<void>>,
 ) => {
   const {
     data,
@@ -365,6 +370,27 @@ export const useDay = (
     }
   }
 
+  const wrappedPause = (
+    time: string,
+    id: number
+  ) => {
+    if (!data) {
+      return;
+    }
+
+    if (userId) {
+      const pause = async () => {
+        const response = await updatePauseApi(userId, id, time);
+        if (300 > response.status) {
+          mutate();
+        }
+      }
+
+      pause();
+      resetTime();
+    }
+  }
+
   const buttonStatus = getButtonStatus(
     status,
     wrapFn(claimStarApi),
@@ -395,6 +421,7 @@ export const useDay = (
     updateLink: (link: string) =>
       wrapFn(updateSubmission)('link', link),
     updateStartTime: wrapFn(updateStartTimeApi, [resetTime]),
-    updateStarTime: wrapFn(updateStarTimeApi, [resetTime])
+    updateStarTime: wrapFn(updateStarTimeApi, [resetTime]),
+    updatePause: wrappedPause
   };
 }

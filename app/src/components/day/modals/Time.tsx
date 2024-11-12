@@ -84,7 +84,7 @@ export default function Time({
     star: 'star_1' | 'star_2'
   ) => void;
   updateStartTime: (timestamp: string) => void;
-  updatePause: (timestamp: string) => void;
+  updatePause: (timestamp: string, id: number) => void;
 }) {
   const isoRegex = new RegExp(
     '([\\d-]{4})-' + // year
@@ -162,7 +162,8 @@ export default function Time({
       .map((time, i) => {
         return {
           timestamp: reformat(time),
-          type: times[i].type
+          type: times[i].type,
+          i
         };
       })
       .filter((time, index) => {
@@ -180,9 +181,9 @@ export default function Time({
           case 'start':
             return updateStartTime(time.timestamp);
           case 'pause':
-            return updatePause(time.timestamp);
+            return updatePause(time.timestamp, times[time.i].id as number);
           case 'resume':
-            return updatePause(time.timestamp);
+            return updatePause(time.timestamp, times[time.i].id as number);
           case 'star_1':
             return updateStar(time.timestamp, 'star_1');
           case 'star_2':

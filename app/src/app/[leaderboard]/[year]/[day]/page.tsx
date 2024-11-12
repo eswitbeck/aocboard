@@ -113,6 +113,7 @@ export default async function SubmissionPage({
         updateSubmission={wrapFn(updateSubmission, leaderboard)}
         updateStartTimeApi={wrapFn(updateStartTime, leaderboard)}
         updateStarTimeApi={wrapFn(updateStarTime, leaderboard)}
+        updatePauseApi={wrapFn(updatePause, leaderboard)}
       />
     </Layout>
   );
