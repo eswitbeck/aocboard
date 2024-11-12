@@ -895,7 +895,8 @@ export const updateStarTime = async (
 
     // time can't be before start time
     if (updatingDate.getTime() < submission.start_time.getTime()) {
-      return { status: 400, error: 'invalid time' };
+      console.log(updatingDate, submission.start_time);
+      return { status: 400, error: 'invalid time -- start' };
     }
 
     const pauses = existing
@@ -939,7 +940,7 @@ export const updateStarTime = async (
         if (updatingDate.getTime() < bounds.lower! ||
             (bounds.upper && updatingDate.getTime() > bounds.upper)
         ) {
-          return { status: 400, error: 'invalid time' };
+          return { status: 400, error: 'invalid time -- star 1' };
         }
 
         const { rows: [s_Submission] } = await client.query(
@@ -970,7 +971,7 @@ export const updateStarTime = async (
         if (updatingDate.getTime() < bounds.lower! ||
             (bounds.upper && updatingDate.getTime() > bounds.upper)
         ) {
-          return { status: 400, error: 'invalid time' };
+          return { status: 400, error: 'invalid time -- star 2' };
         }
 
         const { rows: [s_Submission2] } = await client.query(

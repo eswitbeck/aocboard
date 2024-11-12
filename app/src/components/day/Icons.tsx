@@ -34,7 +34,7 @@ export default function Icons({
     <div className="flex gap-4 justify-center items-center mt-4">
       <div
         className={divClasses}
-        onClick={toggleCommentModal}
+        onClick={isDisabled ? () => {} : toggleCommentModal}
       >
         <ChatBubbleBottomCenterTextIcon className={twMerge(
           classes
@@ -42,7 +42,7 @@ export default function Icons({
       </div>
       <div
         className={divClasses}
-        onClick={toggleLinkModal}
+        onClick={isDisabled ? () => {} : toggleLinkModal}
       >
         <LinkIcon className={twMerge(
           classes
@@ -50,7 +50,7 @@ export default function Icons({
       </div>
       <div
         className={divClasses}
-        onClick={toggleCopyModal}
+        onClick={isDisabled ? () => {} : toggleCopyModal}
       >
         <DocumentDuplicateIcon className={twMerge(
           classes
@@ -58,7 +58,7 @@ export default function Icons({
       </div>
       <div
         className={divClasses}
-        onClick={toggleLanguageModal}
+        onClick={isDisabled ? () => {} : toggleLanguageModal}
       >
         <CodeBracketIcon className={twMerge(
           classes

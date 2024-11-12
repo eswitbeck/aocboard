@@ -111,6 +111,8 @@ export default async function SubmissionPage({
         languages={(await getLanguages()).body!.data}
         updateLanguageApi={wrapFn(updateLanguage, leaderboard)}
         updateSubmission={wrapFn(updateSubmission, leaderboard)}
+        updateStartTimeApi={wrapFn(updateStartTime, leaderboard)}
+        updateStarTimeApi={wrapFn(updateStarTime, leaderboard)}
       />
     </Layout>
   );

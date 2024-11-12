@@ -53,7 +53,9 @@ export default function Container({
   undoStarApi,
   languages,
   updateLanguageApi,
-  updateSubmission
+  updateSubmission,
+  updateStartTimeApi,
+  updateStarTimeApi
 }: {
   submissionResponse: GetSubmissionResponse;
   userId: number | null;
@@ -114,6 +116,22 @@ export default function Container({
     field: 'link' | 'note',
     value: string
   ) => Promise<HTTPLike<{ value: string }>>;
+
+  updateStartTimeApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number,
+    timestamp: string
+  ) => Promise<HTTPLike<{ timestamp: string }>>;
+  updateStarTimeApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboardId: number,
+    time: string,
+    star: 'star_1' | 'star_2'
+  ) => Promise<HTTPLike<{ timestamp: string }>>;
 }) {
   const {
     status,
@@ -128,7 +146,9 @@ export default function Container({
     updateNote,
     link,
     updateLink,
-    times
+    times,
+    updateStartTime,
+    updateStarTime
   } = useDay(
     submissionResponse,
     userId,
@@ -142,7 +162,9 @@ export default function Container({
     resumeSubmssionApi,
     undoStarApi,
     updateLanguageApi,
-    updateSubmission
+    updateSubmission,
+    updateStartTimeApi,
+    updateStarTimeApi
   );
 
   const [modalState, setModalState] = useState<ModalState>(ModalState.None);
@@ -155,8 +177,8 @@ export default function Container({
         isOpen={ModalState.Clock === modalState}
         close={close}
         times={times}
-        updateStar={() => {}}
-        updateStartTime={() => {}}
+        updateStar={updateStarTime}
+        updateStartTime={updateStartTime}
         updatePause={() => {}}
       />
       <Modal isOpen={ModalState.Copy === modalState} close={close}>

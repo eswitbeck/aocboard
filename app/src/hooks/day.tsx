@@ -9,6 +9,7 @@ import useSWR from 'swr';
 import {
   timestamp2Clock
 } from '@/shared/utils';
+import { abort } from 'process';
 
 export const useClock = (
   time: TotalTime
@@ -40,7 +41,18 @@ export const useClock = (
   }, [time]);
 
   const resetTime = () => {
-    setmilliSeconds(0);
+    // at time of calling, time has NOT yet been updated from server
+    // TODO find a way to get the new time before updating
+    if (time.totalTime === 0) {
+      setmilliSeconds(0);
+    } else {
+      const now = new Date();
+      const startingDifference = time.totalTime +
+        (time.lastTimestamp 
+          ? now.getTime() - new Date(time.lastTimestamp).getTime()
+          : 0);
+      setmilliSeconds(startingDifference);
+    }
   }
 
   return {
@@ -257,6 +269,21 @@ export const useDay = (
     field: 'link' | 'note',
     value: string
   ) => Promise<HTTPLike<{ value: string }>>,
+  updateStartTimeApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number,
+    timestamp: string
+  ) => Promise<HTTPLike<{ timestamp: string }>>,
+  updateStarTimeApi: (
+    userId: number,
+    day: number,
+    year: number,
+    leaderboard: number,
+    timestamp: string,
+    star: 'star_1' | 'star_2'
+  ) => Promise<HTTPLike<{ timestamp: string }>>
 ) => {
   const {
     data,
@@ -321,6 +348,7 @@ export const useDay = (
     ) => Promise<HTTPLike<any>>,
     extras?: (() => void)[]
   ) => {
+
     return async (...args: any[]) => {
       if (!data) {
         return;
@@ -365,6 +393,8 @@ export const useDay = (
       wrapFn(updateSubmission)('note', note),
     link: data?.body?.data!.link ?? null,
     updateLink: (link: string) =>
-      wrapFn(updateSubmission)('link', link)
+      wrapFn(updateSubmission)('link', link),
+    updateStartTime: wrapFn(updateStartTimeApi, [resetTime]),
+    updateStarTime: wrapFn(updateStarTimeApi, [resetTime])
   };
 }
