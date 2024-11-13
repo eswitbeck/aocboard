@@ -27,6 +27,7 @@ import LinkModal from './modals/Link';
 import NoteModal from './modals/Note';
 import LanguageModal from './modals/Language';
 import TimeModal from './modals/Time';
+import CopyModal from './modals/Copy';
 
 import Modal from './Modal';
 
@@ -56,7 +57,9 @@ export default function Container({
   updateSubmission,
   updateStartTimeApi,
   updateStarTimeApi,
-  updatePauseApi
+  updatePauseApi,
+  leaderboardDayStatus,
+  copyDay
 }: {
   submissionResponse: GetSubmissionResponse;
   userId: number | null;
@@ -138,6 +141,15 @@ export default function Container({
     pauseId: number,
     time: string
   ) => Promise<HTTPLike<void>>;
+
+  leaderboardDayStatus: LeaderboardDayStatus[];
+  copyDay: (
+    userId: number,
+    day: number,
+    year: number,
+    sourceLeaderboardId: number,
+    targetLeaderboardIds: number[]
+  ) => Promise<HTTPLike<boolean[]>>;
 }) {
   const {
     status,
@@ -179,6 +191,23 @@ export default function Container({
 
   const close = () => setModalState(ModalState.None);
 
+  const wrappedCopyDay = async (
+    targetLeaderboardIds: number[]
+  ): Promise<boolean[]> => {
+    const success = await copyDay(
+      userId as number,
+      day,
+      year,
+      leaderboard,
+      targetLeaderboardIds
+    );
+    if (success.status === 201) {
+      return success.body!.data as boolean[];
+    } else {
+      return new Array(targetLeaderboardIds.length).fill(false);
+    }
+  }
+
   return (
     <>
       <TimeModal
@@ -189,15 +218,12 @@ export default function Container({
         updateStartTime={updateStartTime}
         updatePause={updatePause}
       />
-      <Modal isOpen={ModalState.Copy === modalState} close={close}>
-        <div className={twMerge(
-           "flex flex-col gap-4",
-        )}>
-          <H3 className="text-3xl !my-0">
-            Copy times
-          </H3>
-        </div>
-      </Modal>
+      <CopyModal
+        isOpen={ModalState.Copy === modalState}
+        close={close}
+        leaderboardDayStatus={leaderboardDayStatus}
+        copyDay={wrappedCopyDay}
+      />
       <LanguageModal
         isOpen={ModalState.Language === modalState}
         close={close}

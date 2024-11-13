@@ -117,3 +117,9 @@ type GetSubmissionResponse = HTTPLike<Submssion | null> & {
     total_time: TotalTime
   }
 }
+
+type LeaderboardDayStatus = {
+  id: number;
+  name: string;
+  exists: boolean;
+}

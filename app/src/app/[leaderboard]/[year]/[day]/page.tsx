@@ -20,6 +20,9 @@ import {
   getLanguages,
   updateLanguage,
   updateSubmission,
+
+  getLeaderboardDayStatus,
+  copyDay
 } from '@/server/Main';
 
 import Layout from '@/components/day/Layout';
@@ -66,6 +69,13 @@ export default async function SubmissionPage({
     leaderboard
   );
 
+  const getLeaderboardDayStatusResp = await getLeaderboardDayStatus(
+    userId,
+    leaderboard,
+    day,
+    year
+  );
+
   if (submissionResponse.status === 401) {
     return <RedirectLogin />;
   }
@@ -88,6 +98,7 @@ export default async function SubmissionPage({
   }
 
   const currentUser = currentUserResp.body!.data;
+  const leaderboardDayStatus = getLeaderboardDayStatusResp.body!.data;
 
   return (
     <Layout
@@ -114,6 +125,23 @@ export default async function SubmissionPage({
         updateStartTimeApi={wrapFn(updateStartTime, leaderboard)}
         updateStarTimeApi={wrapFn(updateStarTime, leaderboard)}
         updatePauseApi={wrapFn(updatePause, leaderboard)}
+        leaderboardDayStatus={leaderboardDayStatus}
+        copyDay={async (
+          userId: number,
+          day: number,
+          year: number,
+          leaderboard: number,
+          targetLeaderboardIds: number[]
+        ) => {
+          'use server';
+          return await copyDay(
+            userId,
+            day,
+            year,
+            leaderboard,
+            targetLeaderboardIds
+          );
+        }}
       />
     </Layout>
   );

@@ -895,7 +895,6 @@ export const updateStarTime = async (
 
     // time can't be before start time
     if (updatingDate.getTime() < submission.start_time.getTime()) {
-      console.log(updatingDate, submission.start_time);
       return { status: 400, error: 'invalid time -- start' };
     }
 
@@ -1652,6 +1651,335 @@ export async function getLeaderboards(
       }
     };
 
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+/** Get status of current day on other leaderboard (does it exist,
+ * leaderboard name, leaderboard id) */
+export async function getLeaderboardDayStatus(
+  userId: number | null,
+  leaderboardId: number,
+  day: number,
+  year: number
+): Promise<HTTPLike<LeaderboardDayStatus[]>> {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows } = await pool.query(
+      `SELECT
+        l.id,
+        l.name,
+        s.day IS NOT NULL AS exists
+       FROM Leaderboard l
+       INNER JOIN UserLeaderBoard ul
+        ON ul.leaderboard_id = l.id
+       LEFT JOIN Submission s
+         ON l.id = s.leaderboard_id
+         AND s.day = $1
+         AND s.year = $2
+         AND s.user_id = $4
+       WHERE l.id <> $3
+        AND ul.user_id = $4;`,
+       [day, year, leaderboardId, userId]
+    );
+    
+    if (!rows) {
+      return { status: 404 };
+    }
+
+    return {
+      status: 200,
+      body: {
+        data: rows
+      }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+export const copyDay = async (
+  userId: number | null,
+  day: number,
+  year: number,
+  sourceLeaderboardId: number,
+  targetLeaderboardIds: number[]
+): Promise<HTTPLike<boolean[]>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const fn = async () => {
+    const client = await getClient();
+
+    const { rows: sourceSubmission } = await client.query(
+      `SELECT
+        s.start_time,
+        s.link,
+        s.note,
+        s.language_id,
+        s.star_1_score,
+        s.star_2_score,
+        s.star_1_end_time,
+        s.star_2_end_time,
+        s.star_1_index,
+        s.star_2_index,
+        sp.id as sp_id,
+        sp.parent_id as sp_parent_id,
+        sp.type as sp_type,
+        sp.time as sp_time
+       FROM Submission s
+       LEFT JOIN SubmissionPause sp
+        USING(user_id, day, year, leaderboard_id)
+       WHERE user_id = $1
+         AND day = $2
+         AND year = $3
+         AND leaderboard_id = $4;`,
+      [userId, day, year, sourceLeaderboardId]
+    );
+
+    if (!sourceSubmission[0]) {
+      return { status: 404 };
+    }
+
+    const { rows: existingDays } = await client.query(
+      `SELECT
+        y.year,
+        d.day,
+        l.id
+       FROM Leaderboard l
+        LEFT JOIN LeaderboardYear y
+          ON y.leaderboard_id = l.id
+          AND y.year = $2
+        LEFT JOIN LeaderboardDay d
+          ON
+            d.leaderboard_id = l.id
+            AND d.year = y.year
+            AND d.day = $3
+       WHERE id = ANY ($1);`,
+      [targetLeaderboardIds, year, day]
+    );
+
+    const missingLogs = targetLeaderboardIds
+      .reduce((acc, leaderboardId) => {
+        acc[leaderboardId] = {
+          year: false,
+          day: false
+        };
+        return acc;
+      }, {} as { [key: number]: { year: boolean, day: boolean } });
+
+    for (const existingDay of existingDays) {
+      if (!existingDay.year) {
+        missingLogs[existingDay.id].year = true;
+      }
+      if (!existingDay.day) {
+        missingLogs[existingDay.id].day = true;
+      }
+    }
+
+    const missingYearInsertion = targetLeaderboardIds
+      .filter(leaderboardId => missingLogs[leaderboardId].year)
+      .map(leaderboardId => `(${leaderboardId}, ${year})`)
+      .join(', ');
+
+    const missingDayInsertion = targetLeaderboardIds
+      .filter(leaderboardId => missingLogs[leaderboardId].day)
+      .map(leaderboardId => `(${leaderboardId}, ${year}, ${day})`)
+      .join(', ');
+
+    if (missingYearInsertion.length) {
+      await client.query(
+        `INSERT INTO LeaderboardYear
+         (leaderboard_id, year)
+         VALUES ${missingYearInsertion};`
+      );
+    }
+
+    if (missingDayInsertion.length) {
+      await client.query(
+        `INSERT INTO LeaderboardDay
+         (leaderboard_id, year, day)
+         VALUES ${missingDayInsertion};`
+      );
+    }
+
+    const source = sourceSubmission[0];
+    const pauses = sourceSubmission
+    .map(row => ({
+      id: row.sp_id,
+      parent_id: row.sp_parent_id,
+      type: row.sp_type,
+      time: row.sp_time
+    }));
+
+    const parentlessPauses: {
+      type: string,
+      time: string,
+      id: number
+    }[] = [];
+    const parentedPauses: {
+      parent_id: number,
+      type: string,
+      time: string,
+      id: number
+    }[] = [];
+
+    pauses.forEach(pause => {
+      if (null === pause.id) {
+        return;
+      }
+      if (pause.parent_id) {
+        parentedPauses.push(pause);
+      } else {
+        parentlessPauses.push(pause);
+      }
+    });
+
+    const submissionsInsertion = targetLeaderboardIds
+      .map((leaderboardId, i) => {
+        return `(
+          ${Array.from({ length: 14 }).map((_, j) => {
+            return `$${i * 14 + j + 1}`;
+          }).join(', ')}
+        )`;
+      }).join(', ');
+
+
+    await client.query(
+      `INSERT INTO Submission
+       (user_id,
+        day,
+        year,
+        leaderboard_id,
+        start_time,
+        link,
+        note,
+        language_id,
+        star_1_score,
+        star_2_score,
+        star_1_end_time,
+        star_2_end_time,
+        star_1_index,
+        star_2_index)
+       VALUES ${submissionsInsertion}
+       ON CONFLICT (user_id, day, year, leaderboard_id)
+       DO UPDATE
+         SET start_time = EXCLUDED.start_time,
+             star_1_score = EXCLUDED.star_1_score,
+             star_2_score = EXCLUDED.star_2_score,
+             star_1_end_time = EXCLUDED.star_1_end_time,
+             star_2_end_time = EXCLUDED.star_2_end_time,
+             star_1_index = EXCLUDED.star_1_index,
+             star_2_index = EXCLUDED.star_2_index,
+             link = EXCLUDED.link,
+             language_id = EXCLUDED.language_id,
+             note = EXCLUDED.note;`,
+       targetLeaderboardIds.flatMap((leaderboardId) => {
+         return [
+           userId,
+           day,
+           year,
+           leaderboardId,
+           source.start_time,
+           source.link,
+           source.note,
+           source.language_id,
+           source.star_1_score,
+           source.star_2_score,
+           source.star_1_end_time,
+           source.star_2_end_time,
+           source.star_1_index,
+           source.star_2_index
+         ];
+       })
+    );
+    
+    const parentlessPauseInsertion = targetLeaderboardIds
+      .flatMap((leaderboardId) => {
+        return parentlessPauses.map(pause => {
+          return `(
+            ${userId},
+            ${day},
+            ${year},
+            ${leaderboardId},
+            '${pause.type}',
+            '${new Date(pause.time).toISOString()}'
+          )`;
+        });
+      }).join(', ');
+
+    await client.query(
+      `DELETE FROM SubmissionPause
+       WHERE user_id = $1
+         AND day = $2
+         AND year = $3
+         AND leaderboard_id = ANY ($4);`,
+      [userId, day, year, targetLeaderboardIds]
+    );
+
+    if (parentlessPauseInsertion.length) {
+      const newIds = await client.query(
+        `INSERT INTO SubmissionPause
+         (user_id, day, year, leaderboard_id, type, time)
+         VALUES ${parentlessPauseInsertion}
+         RETURNING id, leaderboard_id;`
+      );
+
+      const parentIdMapping = new Map<string, number>();
+
+      newIds.rows.forEach((row, i) => {
+        parentIdMapping.set(
+          `${row.leaderboard_id}-` +
+             `${parentlessPauses[i % parentlessPauses.length].id}`,
+          row.id
+        );
+      });
+
+      if (parentedPauses.length) {
+        const parentedPauseInsertion = targetLeaderboardIds
+          .flatMap((leaderboardId) => {
+            return parentedPauses.map(pause => {
+              return `(
+                ${userId},
+                ${day},
+                ${year},
+                ${leaderboardId},
+                ${parentIdMapping.get(`${leaderboardId}-${pause.parent_id}`)},
+                '${pause.type}',
+                '${new Date(pause.time).toISOString()}'
+              )`;
+            });
+          }).join(', ');
+
+        await client.query(
+          `INSERT INTO SubmissionPause
+           (user_id, day, year, leaderboard_id, parent_id, type, time)
+           VALUES ${parentedPauseInsertion};`
+        );
+      }
+    }
+
+    return {
+      status: 201,
+      body: {
+        // okay, in theory there should be better error checking
+        // here. In practice, I'm not sure how to handle that with
+        // the bulk inserts and I'm short on time. So here we are.
+        data: targetLeaderboardIds.map(() => true)
+      }
+    };
+  }
+
+  try {
+    return await withTransaction(fn);
   } catch (error) {
     // @ts-ignore
     return { status: 500, error: error2String(error) };
