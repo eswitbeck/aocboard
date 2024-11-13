@@ -176,6 +176,9 @@ export default function Time({
     }
 
     const promises = updates
+      .reverse() // an ill-advised attempt to get these to resolve in 
+      // non-conflicting order. Worst case, we just await them in blocking order.
+      // The longer term solution is to set up a batch update
       .map((time) => {
         switch (time.type) {
           case 'start':
