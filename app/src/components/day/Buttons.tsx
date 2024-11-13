@@ -58,7 +58,7 @@ export default function Buttons({
           "flex justify-center items-center",
           "p-2 rounded-3xl",
           "relative",
-          disabled.star ? "bg-gray-800" : "bg-gray-600 cursor-pointer"
+          disabled.star ? "bg-gray-800" : "bg-orange-500 cursor-pointer"
         )}
         onClick={disabled.star
           ? undefined
@@ -75,14 +75,14 @@ export default function Buttons({
         ) : (
           <SolidStarIcon
             className={twMerge(
-              "text-gray-300",
+              "text-gray-800",
               "w-20 h-20"
             )}
           />
         )} 
         <PlusIcon
           className={twMerge(
-            disabled.star ? "text-gray-700" : "text-gray-300",
+            disabled.star ? "text-gray-700" : "text-gray-800",
             "w-6 h-6",
             "absolute top-2 right-2"
           )}
@@ -92,7 +92,9 @@ export default function Buttons({
         className={twMerge(
           "flex justify-center items-center",
           "p-2 rounded-2xl",
-          disabled.pause ? "bg-gray-800" : "bg-gray-700 cursor-pointer"
+          disabled.pause ? "bg-gray-800" :
+            functions.isPause ? "bg-gray-700 cursor-pointer" :
+            "bg-orange-500 cursor-pointer"
         )}
         onClick={disabled.pause
           ? undefined
@@ -125,7 +127,7 @@ export default function Buttons({
           ) : (
             <SolidPlayIcon
               className={twMerge(
-                "text-gray-400",
+                "text-gray-800",
                 "w-12 h-12"
               )}
             />
