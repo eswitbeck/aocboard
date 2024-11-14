@@ -1578,7 +1578,13 @@ export async function getLeaderboards(
   id: number,
   name: string,
   is_owner: boolean,
-  participants: { id: number, display_name: string, username: string, link: string }[],
+  participants: {
+    id: number,
+		display_name: string,
+		username: string,
+		link: string|null,
+    avatar_color: AvatarColor
+  }[],
   invitation: { code: string, expires_at: string } | null
 }[]>> {
   if (!userId) {
@@ -1597,12 +1603,15 @@ export async function getLeaderboards(
         p.id as user_id,
         p.display_name,
         p.username,
-        p.link
+        p.link,
+        ac.color as avatar_color
         FROM UserLeaderBoard ul
         JOIN UserLeaderBoard ul2
           ON ul.leaderboard_id = ul2.leaderboard_id
         JOIN AppUser p
           ON ul2.user_id = p.id
+        JOIN AvatarColor ac
+          ON p.avatar_color_id = ac.id
         JOIN Leaderboard l
           ON ul.leaderboard_id = l.id
         LEFT JOIN Invitation i
@@ -1617,7 +1626,13 @@ export async function getLeaderboards(
         name: string,
         is_owner: boolean,
         invitation: { code: string, expires_at: string } | null
-        participants: { id: number, display_name: string, username: string, link: string }[]
+        participants: {
+          id: number,
+          display_name: string,
+          username: string,
+          link: string,
+          avatar_color: AvatarColor
+        }[]
       }
     };
 
@@ -1640,7 +1655,8 @@ export async function getLeaderboards(
         id: row.user_id,
         display_name: row.display_name,
         username: row.username,
-        link: row.link
+        link: row.link,
+        avatar_color: row.avatar_color
       });
     }
 
@@ -2474,7 +2490,7 @@ export const updateInvitation = async (
 
 export const getSelf = async (
   userId: number | null
-): Promise<HTTPLike<User>> => {
+): Promise<HTTPLike<User & { username: string }>> => {
   if (!userId) {
     return { status: 401 };
   }

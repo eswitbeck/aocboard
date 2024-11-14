@@ -94,7 +94,7 @@ export default function Avatar({
     link: string | null,
     avatar_color: AvatarColor
   },
-  size?: 'xs' | 'sm' | 'md' | 'lg',
+  size?: 'xs' | 'sm' | 'md' | 'lg' | '3xl',
   disabled?: boolean,
   className?: string
 }) {
@@ -106,8 +106,10 @@ export default function Avatar({
           size === 'xs' ? "h-6 w-6" :
           size === 'sm' ? "h-8 w-8" :
           size === 'md' ? "h-10 w-10" :
-                          "h-16 w-16",
-          "border-4",
+          size === 'lg' ? "h-16 w-16" :
+                          "h-36 w-36",
+          size === '3xl' ? "border-8" :
+                          "border-4",
           AVATAR_COLORS[user.avatar_color].border,
           AVATAR_COLORS[user.avatar_color].bg,
           "flex justify-center items-center",
@@ -122,7 +124,8 @@ export default function Avatar({
           size === 'xs' ? "text-sm" :
           size === 'sm' ? "text-lg" :
           size === 'md' ? "text-xl" :
-                          "text-2xl",
+          size === 'lg' ? "text-2xl" :
+                          "text-5xl",
         )}>
           {user.display_name[0].toUpperCase()}
         </Base>
@@ -133,7 +136,8 @@ export default function Avatar({
           size === 'xs' ? "h-6 w-6" :
           size === 'sm' ? "h-8 w-8" :
           size === 'md' ? "h-10 w-10" :
-                          "h-16 w-16",
+          size === 'lg' ? "h-16 w-16" :
+                          "h-36 w-36",
           "bg-neutral-600",
           "top-0 left-0",
           "opacity-55",
