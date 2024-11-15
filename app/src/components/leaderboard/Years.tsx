@@ -342,7 +342,7 @@ function DayRow({
           </Base>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex items-center gap-2 overflow-x-auto w-full">
           {users.map(({ user, score, complete, id }) => (
             <div
               key={id}
