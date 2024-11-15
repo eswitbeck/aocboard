@@ -1981,6 +1981,12 @@ export const copyDay = async (
            VALUES ${parentedPauseInsertion};`
         );
       }
+
+      const scoreUpdatePromises = targetLeaderboardIds.map((leaderboardId) => {
+        return updateScores(client, leaderboardId, year, day);
+      });
+
+      await Promise.all(scoreUpdatePromises);
     }
 
     return {
