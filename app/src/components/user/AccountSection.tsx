@@ -21,7 +21,7 @@ export default function AccountSection({
   updateUser: (
     field: 'link' | 'display_name',
     value: string | null
-  ) => Promise<HTTPLike<void>>
+  ) => Promise<void>
 }) {
 
 
@@ -32,7 +32,7 @@ export default function AccountSection({
     <>
       {/* header if you want it */}
       <div className={twMerge(
-        "flex flex-col gap-12 py-4 mb-8 mt-[10%]",
+        "flex flex-col gap-12 py-4 mt-[10%]",
         "items-center"
       )}>
           <div className={twMerge(

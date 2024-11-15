@@ -1,6 +1,7 @@
 'use client';
 import { twMerge } from 'tailwind-merge';
 import { useState } from 'react';
+import Link from 'next/link';
 
 import {
   useUser,
@@ -8,17 +9,11 @@ import {
 } from '@/hooks/user';
 
 import AccountSection from '@/components/user/AccountSection';
-
-import {
-  PencilIcon
-} from '@heroicons/react/24/outline';
-
+import Avatar from '@/components/shared/Avatar';
 
 import {
   H1, H3, A, Base, Small
 } from '@/components/core/text';
-
-import Avatar from '@/components/shared/Avatar';
 
 export default function Container({
   userId,
@@ -92,219 +87,91 @@ export default function Container({
     updateInvitationApi
   );
 
-  const [editingSelfName, setEditingSelfName] = useState(false);
-  const [editingSelfLink, setEditingSelfLink] = useState(false);
-
   return (
     <>
       <AccountSection
         self={self}
         updateUser={updateUser}
       />
-      {/* header if you want it */}
       <div className={twMerge(
-        "flex flex-col gap-12 py-4 mb-8 mt-[10%]",
-        "items-center"
+        'flex flex-col gap-4',
       )}>
-          <div className={twMerge(
-            "flex flex-col gap-3",
-            "items-center"
-          )}>
-          {self && (<>
-            <Avatar
-              user={self}
-              size="3xl"
-            />
-            <div className={twMerge(
-              "flex flex-col gap-3",
-              "items-start"
-            )}>
-              <Base className={twMerge(
-                "text-gray-400",
-                "text-lg"
-              )}>
-                @{self.username}
-              </Base>
-              <div
-                className={twMerge(
-                  "cursor-pointer",
-                  "flex justify-center items-center",
-                  "rounded-2xl px-4 py-2",
-                  "bg-gray-600",
-                  editingSelfName && "ring-2 ring-orange-500",
-                  "min-w-[60vw]",
-                  "overflow-x-scroll"
-                )}
-              >
-                {!editingSelfName && (
-                  <>
-                    <div
-                      onClick={() => {
-                        setEditingSelfName(!editingSelfName);
-                      }}
-                      className={twMerge(
-                        "flex items-center",
-                        "justify-between",
-                        "w-full"
-                      )}
-                    >
-                      <Base className={twMerge(
-                        "text-xl",
-                        "font-bold"
-                      )}>
-                        {self.display_name || 'Add a display name'}
-                      </Base>
-                      <PencilIcon
-                        className={twMerge(
-                          "w-6 h-6",
-                          "ml-2",
-                          "text-gray-300"
-                        )}
-                      />
-                    </div>
-                  </>
-                )}
-                {editingSelfName && (
-                  <Base>
-                    <input
-                      type="text"
-                      className={twMerge(
-                        "text-xl",
-                        "font-bold",
-                        "bg-gray-600",
-                        "outline-none",
-                      )}
-                      placeholder="Add a display name"
-                      defaultValue={self.display_name}
-                      onBlur={(e) => {
-                        updateUser(
-                          'display_name',
-                          e.target.value
-                        );
-                        setEditingSelfName(false);
-                      }}
-                    />
-                  </Base>
-                )}
-              </div>
-              <div
-                className={twMerge(
-                  "cursor-pointer",
-                  "flex justify-center items-center",
-                  "rounded-2xl px-4 py-2",
-                  "bg-gray-600",
-                  editingSelfLink && "ring-2 ring-orange-500",
-                  "min-w-[60vw]"
-                )}
-              >
-                {!editingSelfLink && (
-                  <>
-                    <div
-                      onClick={() => {
-                        setEditingSelfLink(!editingSelfLink);
-                      }}
-                      className={twMerge(
-                        "flex items-center",
-                        "justify-between",
-                        "w-full"
-                      )}
-                    >
-                      <Base className={twMerge(
-                        "text-lg",
-                        "font-bold",
-                        "text-gray-300",
-                        !self.link && "text-gray-500"
-                      )}>
-                        {self.link || 'Add a profile link'}
-                      </Base>
-                      <PencilIcon
-                        className={twMerge(
-                          "w-6 h-6",
-                          "ml-2",
-                          "text-gray-300",
-                          !self.link && "text-gray-400"
-                        )}
-                      />
-                    </div>
-                  </>
-                )}
-                {editingSelfLink && (
-                  <Base>
-                    <input
-                      type="text"
-                      className={twMerge(
-                        "text-lg",
-                        "font-bold",
-                        "bg-gray-600",
-                        "outline-none",
-                        "text-gray-300"
-                      )}
-                      defaultValue={self.link ?? ''}
-                      placeholder="Add a profile link"
-                      onBlur={(e) => {
-                        updateUser(
-                          'link',
-                          e.target.value || null
-                        );
-                        setEditingSelfLink(false);
-                      }}
-                    />
-                  </Base>
-                )}
-              </div>
-            </div>
-          </>)}
-          {!self && (
-            <ProfileSkeleton />
-          )}
-          </div>
-      </div>
-    </>
-  );
-}
-
-function ProfileSkeleton() {
-  return (
-    <>
-      <div className={twMerge(
-        "flex justify-center items-center",
-        "rounded-full",
-        "bg-gray-600",
-        "w-36 h-36",
-        "animate-pulse"
-      )}/>
-      <div className={twMerge(
-        "flex flex-col gap-3",
-        "items-start"
-      )}>
+        <div className="px-8">
+          <H3>Your Leaderboards</H3>
+        </div>
         <div className={twMerge(
-          "flex justify-center items-center",
-          "rounded-2xl px-4 py-2",
-          "bg-gray-600",
-          "min-w-[60vw]",
-          "animate-pulse",
-          "h-8"
-        )}/>  
-        <div
-          className={twMerge(
-            "flex justify-center items-center",
-            "rounded-2xl px-4 py-2",
-            "bg-gray-600",
-            "min-w-[60vw]",
-            "animate-pulse",
-            "h-11"
-          )}
-        />
-        <div
-          className={twMerge(
-            "flex justify-center items-center",
-            "rounded-2xl px-4 py-2",
-            "bg-gray-600",
-            "min-w-[60vw]",
-            "animate-pulse",
-            "h-11"
-          )}
-        />
+          "w-full bg-gray-600",
+          "h-[35vh]",
+          "px-8 py-2",
+        )}>
+          <div className="flex gap-2 overflow-y-scroll w-full h-full">
+            {leaderboards && leaderboards.map(leaderboard => (
+              <Link href={`/${leaderboard.id}`} key={leaderboard.id}>
+                <div key={leaderboard.id} className={twMerge(
+                  "min-w-[47vw]",
+                  "h-full",
+                  "p-2",
+                  "rounded-md",
+                  "border-2 border-gray-500",
+                  "flex gap-2 flex-col"
+                )}>
+                  <Base className="text-center text-lg">
+                    {leaderboard.name}
+                  </Base>
+                  {leaderboard.is_owner && (
+                    <Small className="text-gray-400">
+                      (owner)
+                    </Small>
+                  )}
+                  <Small className="text-gray-400">
+                  </Small>
+                  <div className={twMerge(
+                    "flex gap-2 flex-col max-h-[50%] overflow-scroll",
+                    "p-2",
+                  )}>
+                    {leaderboard.participants.map(participant => (
+                      <div className="flex justify-between" key={participant.id}>
+                        <Avatar
+                          user={participant}
+                          size="xs"
+                          className="outline-gray-600"
+                        />
+                        <Base className="text-gray-400">
+                          {participant.display_name}
+                        </Base>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Link>
+            ))}
+            <div className={twMerge(
+              "min-w-[47vw]",
+              "h-full",
+              "p-2",
+              "rounded-md",
+              "border-2 border-gray-500",
+              "flex gap-2 flex-col"
+            )}>
+              <Base className="text-center text-lg">
+                Create a new leaderboard
+              </Base>
+              <button
+                onClick={createLeaderboard}
+                className={twMerge(
+                  "bg-blue-500",
+                  "hover:bg-blue-600",
+                  "text-white",
+                  "rounded-md",
+                  "p-2",
+                  "text-center"
+                )}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
