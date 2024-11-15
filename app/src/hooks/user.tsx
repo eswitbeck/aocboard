@@ -15,7 +15,7 @@ export const useUser = (
   updateAccount: (
     userId: number,
     field: 'link' | 'display_name',
-    value: string
+    value: string | null
   ) => Promise<HTTPLike<{}>>
 ) => {
   const {
@@ -35,9 +35,11 @@ export const useUser = (
 
   const updateUser = async (
     field: 'link' | 'display_name',
-    value: string
+    value: string | null
   ) => {
-    if (!self?.body) {
+    if (!self?.body ||
+        ('display_name' === field && !value)
+    ) {
       return;
     }
     const newUser = {

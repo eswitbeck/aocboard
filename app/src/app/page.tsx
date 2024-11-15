@@ -18,13 +18,11 @@ import {
 } from '@/server/Main';
 
 import {
-  LoginButton,
   LogoutButton
 } from '@/app/_components/AuthButtons';
 
 import InvitationUpdate from '@/app/_components/InvitationUpdate';
 import LeaderboardUpdate from '@/app/_components/LeaderboardUpdate';
-import UserUpdate from '@/app/_components/UserUpdate';
 
 import {
   CreateLeaderboardButton,
@@ -102,6 +100,7 @@ export default async function Page() {
 
   return (
     <div className="flex flex-col justify-center gap-4">
+      <LogoutButton logout={handleLogout} />
       <Container
         userId={userid}
         updateAccount={wrapFn(updateAccount, [async () => {
@@ -114,18 +113,6 @@ export default async function Page() {
         updateInvitationApi={wrapLeaderboardFn(updateInvitation)}
         createInvitationApi={wrapLeaderboardFn(createInvitation)}
       />
-      <p>Welcome, {display_name}!</p>
-      <p>Your username is {username}.</p>
-      {link && <p>Your account link is {link}.</p>}
-      <UserUpdate updateUser={async (
-        field: 'link' | 'display_name', 
-        value: string
-      ) => {
-        'use server';
-        updateAccount(userid, field, value);
-        revalidatePath('/');
-      }} />
-      <LogoutButton logout={handleLogout} />
       <CreateLeaderboardButton createLeaderboard={createLeaderboard} />
       {/* TODO fix the typing here and horrid className runon */}
       {leaderboards && leaderboards.body && leaderboards.body.data.map(
