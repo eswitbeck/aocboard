@@ -61,7 +61,7 @@ export default function AccountSection({
                   "rounded-2xl px-4 py-2",
                   "bg-gray-600",
                   editingSelfName && "ring-2 ring-orange-500",
-                  "min-w-[60vw]",
+                  "w-[60vw]",
                   "overflow-x-scroll"
                 )}
               >
@@ -81,7 +81,9 @@ export default function AccountSection({
                         "text-xl",
                         "font-bold"
                       )}>
-                        {self.display_name || 'Add a display name'}
+                        {self.display_name.slice(0, 15) +
+                          (self.display_name.length > 15 ? '...' : '')
+                          || 'Add a display name'}
                       </Base>
                       <PencilIcon
                         className={twMerge(
@@ -123,7 +125,9 @@ export default function AccountSection({
                   "rounded-2xl px-4 py-2",
                   "bg-gray-600",
                   editingSelfLink && "ring-2 ring-orange-500",
-                  "min-w-[60vw]"
+                  "w-[60vw]",
+                  "overflow-x-scroll",
+                  "whitespace-nowrap"
                 )}
               >
                 {!editingSelfLink && (
@@ -144,7 +148,9 @@ export default function AccountSection({
                         "text-gray-300",
                         !self.link && "text-gray-500"
                       )}>
-                        {self.link || 'Add a profile link'}
+                        {self.link && self.link.slice(0, 14) + 
+                          (self.link.length > 15 ? '...' : '')
+                          || 'Add a profile link'}
                       </Base>
                       <PencilIcon
                         className={twMerge(

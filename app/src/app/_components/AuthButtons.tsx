@@ -48,18 +48,3 @@ export function LoginButton({
     </div>
   );
 }
-
-export function LogoutButton({
-  logout
-}: {
-  logout: () => void;
-}) {
-  return (
-    <button
-      className="bg-red-500 text-white p-2 rounded"
-      onClick={() => logout()}
-    >
-      Logout
-    </button>
-  );
-}

@@ -20,9 +20,10 @@ export default function Modal({
   return (
       <div
         className={twMerge(
-          "absolute left-0 top-0 w-full h-[100vh]",
+          "fixed left-0 top-0 w-full h-[100vh]",
           "overflow-hidden",
           "pointer-events-none",
+          "z-20",
         )}
       >
         <div
@@ -34,6 +35,7 @@ export default function Modal({
             "transition-all duration-300",
             "pointer-events-auto",
             "p-4",
+            "shadow-[0px_-3px_8px_3px_rgba(0,0,0,0.2)]",
           )}
           style={{
             top: isOpen ? '25%' : '100%',

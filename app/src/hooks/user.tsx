@@ -8,6 +8,7 @@ import {
   getSelf,
   getLeaderboards,
   createLeaderboard as createLeaderboardApi,
+  leaveLeaderboard as leaveLeaderboardApi
 } from '@/server/Main';
 
 export const useUser = (
@@ -188,6 +189,11 @@ export const useLeaderboards = (
     leaderboardsMutate();
   }
 
+  const leaveLeaderboard = async (leaderboardId: number) => {
+    await leaveLeaderboardApi(userId, leaderboardId);
+    leaderboardsMutate();
+  }
+
   return {
     leaderboards: leaderboards?.body?.data ?? null,
     leaderboardsError,
@@ -196,7 +202,8 @@ export const useLeaderboards = (
     deleteLeaderboard,
     updateLeaderboard,
     createInvitation,
-    updateInvitation
+    updateInvitation,
+    leaveLeaderboard
   };
 }
 

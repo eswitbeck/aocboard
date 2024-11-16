@@ -16,10 +16,6 @@ import {
   updateInvitation
 } from '@/server/Main';
 
-import {
-  LogoutButton
-} from '@/app/_components/AuthButtons';
-
 import Container from '@/components/user/Container';
 
 export default async function Page() {
@@ -95,7 +91,6 @@ export default async function Page() {
         updateInvitationApi={wrapLeaderboardFn(updateInvitation)}
         createInvitationApi={wrapLeaderboardFn(createInvitation)}
       />
-      <LogoutButton logout={handleLogout} />
     </div>
   );
 }
