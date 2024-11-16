@@ -113,6 +113,9 @@ export const useLeaderboards = (
     id: number;
     name: string;
     is_owner: boolean;
+    created_at: string;
+    owner_id: number;
+    note: string | null;
     participants: {
       id: number;
       display_name: string;

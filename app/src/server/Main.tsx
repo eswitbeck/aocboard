@@ -1578,6 +1578,9 @@ export async function getLeaderboards(
   id: number,
   name: string,
   is_owner: boolean,
+  owner_id: number,
+  created_at: string,
+  note: string | null,
   participants: {
     id: number,
 		display_name: string,
@@ -1600,6 +1603,9 @@ export async function getLeaderboards(
         i.code,
         i.expires_at,
         l.owner_id = $1 as is_owner,
+        l.owner_id,
+        l.created_at,
+        l.note,
         p.id as user_id,
         p.display_name,
         p.username,
@@ -1625,6 +1631,9 @@ export async function getLeaderboards(
         id: number,
         name: string,
         is_owner: boolean,
+        owner_id: number,
+        created_at: string,
+        note: string | null,
         invitation: { code: string, expires_at: string } | null
         participants: {
           id: number,
@@ -1642,6 +1651,9 @@ export async function getLeaderboards(
           id: row.id,
           name: row.name,
           is_owner: row.is_owner,
+          owner_id: row.owner_id,
+          created_at: row.created_at.toISOString(),
+          note: row.note,
           invitation: row.code
             ? {
                 code: row.code,
