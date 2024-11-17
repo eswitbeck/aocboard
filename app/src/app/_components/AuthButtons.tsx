@@ -1,5 +1,6 @@
 'use client';
 import { useRef } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 export function LoginButton({
   login
@@ -24,22 +25,44 @@ export function LoginButton({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-4">
-        <input
-          type="text"
-          placeholder="Username"
-          ref={usernameRef}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          ref={passwordRef}
-        />
-      </div>
+    <div className="flex flex-col gap-4 items-center">
+      <input
+        type="text"
+        placeholder="username"
+        ref={usernameRef}
+        className={twMerge(
+          'rounded-2xl',
+          'p-2',
+          'focus:outline-none',
+          'focus:ring-2 focus:ring-orange-500',
+          'bg-gray-700',
+          'text-gray-200',
+          'placeholder-gray-400'
+        )}
+      />
+      <input
+        type="password"
+        placeholder="password"
+        ref={passwordRef}
+        className={twMerge(
+          'rounded-2xl',
+          'p-2',
+          'focus:outline-none',
+          'focus:ring-2 focus:ring-orange-500',
+          'bg-gray-700',
+          'text-gray-200',
+          'placeholder-gray-400'
+        )}
+      />
       <div className="flex gap-4">
         <button
-          className="bg-blue-500 text-white p-2 rounded"
+          className={twMerge(
+            'bg-orange-500 p-2 rounded',
+            'text-gray-700',
+            'focus:outline-none',
+            'focus:ring-2 focus:ring-gray-100',
+            'rounded-2xl w-24'
+          )}
           onClick={handleClick}
         >
           Login

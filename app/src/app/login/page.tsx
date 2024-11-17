@@ -1,6 +1,9 @@
 import { revalidatePath } from 'next/cache';
 import { redirect as redirectFn } from 'next/navigation';
 import Link from 'next/link';
+import { twMerge } from 'tailwind-merge';
+
+import { H1 } from '@/components/core/text';
 
 import {
   getUserIdFromAccessToken,
@@ -12,7 +15,6 @@ import {
 
 import {
   LoginButton,
-  LogoutButton
 } from '@/app/_components/AuthButtons';
 
 export default async function Page({
@@ -46,9 +48,23 @@ function Login({
     redirectFn(redirectLocation || '/');
   }
   return (
-    <div className="flex flex-col gap-2 items-center">
+    <div className="flex flex-col gap-2 items-center mt-[34%]">
+      <H1>Log in</H1>
       <LoginButton login={loginCallback} />
-      <Link href="/create-account">Register</Link>
+      <Link
+        href="/create-account"
+        className={twMerge(
+          'text-gray-300',
+          'text-lg',
+          'rounded-2xl',
+          'px-2 py-1',
+          'border-2 border-gray-400',
+          'focus:outline-none',
+          'focus:ring-2 focus:ring-orange-500',
+        )}
+      >
+        Register
+      </Link>
     </div>
   );
 
