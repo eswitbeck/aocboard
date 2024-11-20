@@ -46,7 +46,7 @@ function Login({
   }
 
   const href = !!redirectLocation
-    ? `/create-account?redirect=${redirectLocation}`
+    ? `/create-account?redirect=${encodeURIComponent(redirectLocation)}`
     : '/create-account';
   return (
     <div className="flex flex-col gap-2 items-center mt-[34%]">

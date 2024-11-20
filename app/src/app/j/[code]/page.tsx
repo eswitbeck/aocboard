@@ -5,6 +5,8 @@ import {
   getUserIdFromAccessToken
 } from '@/server/Main';
 
+import { Base } from '@/components/core/text';
+
 import RedirectLogin from '@/app/_components/RedirectLogin';
 
 export default async function JoinPage({
@@ -21,7 +23,19 @@ export default async function JoinPage({
   const { status } = result;
 
   if (401 === status) {
-    return <RedirectLogin />;
+    return (
+      <div className="flex flex-col gap-2 items-center mt-[34%] mx-12">
+        <Base className="text-gray-300 text-lg text-center mb-12">
+          You need to be logged in to join a leaderboard.
+        </Base>
+        {/* button for login */}
+        
+        <Base className="text-gray-300 text-lg text-center mb-12">
+          Or create an account if you don&apos;t have one.
+        </Base>
+        {/* button for create account */}
+      </div>
+    );
   }
 
   if ([403, 404].includes(status)) {

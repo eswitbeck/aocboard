@@ -61,7 +61,7 @@ function CreateAccountPage({
   }
 
   const href = !!redirectLocation
-    ? `/login?redirect=${redirectLocation}`
+    ? `/login?redirect=${encodeURIComponent(redirectLocation)}`
     : '/login';
 
   return (
@@ -80,7 +80,9 @@ function CreateAccountPage({
           'rounded-2xl',
           'p-1 px-3',
           'hover:bg-gray-700',
-          'hover:text-gray-300'
+          'hover:text-gray-300',
+          'focus:outline-none',
+          'focus:ring-2 focus:ring-orange-400',
         )}
       >
         Log in
