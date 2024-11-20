@@ -7,10 +7,7 @@ import { H1 } from '@/components/core/text';
 
 import {
   getUserIdFromAccessToken,
-  refreshAccessToken,
   login,
-  logout,
-  registerUser
 } from '@/server/Main';
 
 import {
@@ -47,12 +44,16 @@ function Login({
     await login(username, password);
     redirectFn(redirectLocation || '/');
   }
+
+  const href = !!redirectLocation
+    ? `/create-account?redirect=${redirectLocation}`
+    : '/create-account';
   return (
     <div className="flex flex-col gap-2 items-center mt-[34%]">
       <H1>Log in</H1>
       <LoginButton login={loginCallback} />
       <Link
-        href="/create-account"
+        href={href}
         className={twMerge(
           'text-gray-300',
           'text-lg',
