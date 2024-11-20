@@ -22,18 +22,29 @@ export default async function JoinPage({
 
   const { status } = result;
 
+  const href = encodeURIComponent(`/j/${code}`);
+
   if (401 === status) {
     return (
-      <div className="flex flex-col gap-2 items-center mt-[34%] mx-12">
-        <Base className="text-gray-300 text-lg text-center mb-12">
+      <div className="flex flex-col gap-8 items-center mt-[34%] mx-12">
+        <Base className="text-gray-300 text-lg text-center">
           You need to be logged in to join a leaderboard.
         </Base>
-        {/* button for login */}
-        
-        <Base className="text-gray-300 text-lg text-center mb-12">
+        <Link
+          href={`/login?redirect=${href}`}
+          className="btn btn-primary"
+        >
+          Log in
+        </Link>
+        <Base className="text-gray-300 text-lg text-center">
           Or create an account if you don&apos;t have one.
         </Base>
-        {/* button for create account */}
+        <Link
+          href={`/create-account?redirect=${href}`}
+          className="btn btn-primary"
+        >
+          Register
+        </Link>
       </div>
     );
   }
