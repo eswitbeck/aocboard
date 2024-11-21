@@ -1515,9 +1515,21 @@ export async function logout() {
 export async function registerUser(
   username: string,
   password: string
-) {
+): Promise<HTTPLike<void>> {
   try {
     const pool = getPool();
+
+    const { rows: [existing] } = await pool.query(
+      `SELECT id
+       FROM AppUser
+       WHERE username = $1;`,
+      [username]
+    );
+
+    if (existing) {
+      return { status: 409, error: 'username already exists' };
+    }
+
     const hashedPassword = bcrypt.hashSync(password, 10);
     await pool.query(
       `INSERT INTO AppUser
@@ -2086,7 +2098,10 @@ export const deleteLeaderboard = async (
 export const joinLeaderboard = async (
   userId: number | null,
   code: string
-): Promise<HTTPLike<number>> => {
+): Promise<HTTPLike<{
+  id: number,
+  name: string
+}>> => {
   if (!userId) {
     return { status: 401 };
   }
@@ -2096,6 +2111,7 @@ export const joinLeaderboard = async (
     const { rows: [row] } = await pool.query(
       `SELECT
         l.id,
+        l.name,
         i.expires_at
        FROM Invitation i
        JOIN Leaderboard l
@@ -2108,7 +2124,7 @@ export const joinLeaderboard = async (
       return { status: 404 };
     }
 
-    const { id, expires_at } = row;
+    const { id, expires_at, name } = row;
 
     if (new Date().getTime() > expires_at.getTime()) {
       return { status: 403, error: 'invitation expired' };
@@ -2134,7 +2150,10 @@ export const joinLeaderboard = async (
     return {
       status: 200,
       body: {
-        data: leaderboardId.leaderboard_id
+        data: {
+          id: leaderboardId.leaderboard_id,
+          name
+        }
       }
 
     };

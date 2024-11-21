@@ -53,11 +53,19 @@ function CreateAccountPage({
   const loginCallback = async (
     username: string,
     password: string
-  ) => {
+  ): Promise<{ status: number }> => {
     'use server';
-    await registerUser(username, password);
+    const response = await registerUser(username, password);
+    if (response.status === 409) {
+      return response;
+    }
+
     await login(username, password);
     redirectFn(redirectLocation || '/');
+
+    return {
+      status: 200
+    };
   }
 
   const href = !!redirectLocation

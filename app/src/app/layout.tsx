@@ -15,10 +15,13 @@ export default function RootLayout({
       <body
         className={twMerge(
           "bg-gray-900 text-gray-200",
-          "relative"
+          "relative",
+          "flex justify-center",
         )}
       >
-        {children}
+        <div className="max-w-2xl">
+          {children}
+        </div>
       </body>
     </html>
   )

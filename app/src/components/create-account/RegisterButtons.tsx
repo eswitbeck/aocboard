@@ -1,6 +1,8 @@
 'use client';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
+
+import { Base } from '@/components/core/text';
 
 export default function LoginButton({
   register
@@ -8,20 +10,26 @@ export default function LoginButton({
   register: (
     username: string,
     password: string
-  ) => Promise<void>;
+  ) => Promise<HTTPLike<void>>;
 }) {
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  const [exists, setExists] = useState(false);
 
   const handleClick = async () => {
     if (!usernameRef.current || !passwordRef.current) {
       return;
     }
 
-    await register(
+    const resp = await register(
       usernameRef.current.value,
       passwordRef.current.value
     );
+
+    if (resp.status === 409) {
+      setExists(true);
+    }
   }
 
   return (
@@ -37,9 +45,15 @@ export default function LoginButton({
           'focus:ring-2 focus:ring-orange-500',
           'bg-gray-700',
           'text-gray-200',
-          'placeholder-gray-400'
+          'placeholder-gray-400',
+          exists && 'ring-2 ring-red-500'
         )}
       />
+      {exists && (
+        <Base className="text-red-500 mx-12 text-center">
+          This username has already been taken. Please choose another.
+        </Base>
+      )}
       <input
         type="password"
         placeholder="password"

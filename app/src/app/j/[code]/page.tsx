@@ -1,3 +1,4 @@
+import { twMerge } from 'tailwind-merge';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -32,7 +33,14 @@ export default async function JoinPage({
         </Base>
         <Link
           href={`/login?redirect=${href}`}
-          className="btn btn-primary"
+          className={twMerge(
+            'bg-orange-500',
+            'text-lg text-gray-700',
+            'rounded-2xl',
+            'px-4 py-2',
+            'focus:outline-none',
+            'focus:ring-2 focus:ring-white'
+          )}
         >
           Log in
         </Link>
@@ -41,7 +49,14 @@ export default async function JoinPage({
         </Base>
         <Link
           href={`/create-account?redirect=${href}`}
-          className="btn btn-primary"
+          className={twMerge(
+            'border-2 border-gray-400',
+            'text-lg text-gray-300',
+            'rounded-2xl',
+            'px-4 py-2',
+            'focus:outline-none',
+            'focus:ring-2 focus:ring-orange-500'
+          )}
         >
           Register
         </Link>
@@ -54,13 +69,35 @@ export default async function JoinPage({
   }
 
   if (200 === status) {
-    const leaderboardId = result.body!.data;
+    const { id, name } = result.body!.data;
     return (
       <div>
-        <p>Successfully joined leaderboard!</p>
-        <Link href={`/${leaderboardId}`}>
-          View leaderboard
-        </Link>
+        <Base className="text-gray-300 text-lg text-center mt-12 mx-12">
+          You&apos;ve joined the leaderboard,
+          <br />
+          <span className="text-orange-500 font-bold">
+            {name}
+          </span>.
+          <br />
+          Welcome!
+        </Base>
+        <div className="flex flex-col gap-4 items-center justify-center mt-8">
+          <Link
+            className={twMerge(
+              "text-gray-700",
+              "bg-orange-500",
+              "rounded-2xl",
+              "p-2",
+              "focus:outline-none",
+              "focus:ring-2 focus:ring-gray-100",
+              "w-36",
+              "text-center"
+            )}
+            href={`/${id}`}
+          >
+            Continue
+          </Link>
+        </div>
       </div>
     );
   }
