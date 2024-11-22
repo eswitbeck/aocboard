@@ -28,48 +28,58 @@ export default function Modal({
       >
         <div
           className={twMerge(
-            "absolute left-0 w-full h-full",
-            "bg-gray-600",
-            "rounded-t-xl",
+            "absolute left-0 top-0 w-full h-full",
+            "flex justify-center",
             "z-20",
+            "pointer-events-none",
             "transition-all duration-300",
-            "pointer-events-auto",
-            "p-4",
-            "shadow-[0px_-3px_8px_3px_rgba(0,0,0,0.2)]",
           )}
           style={{
             top: isOpen ? '25%' : '100%',
           }}
         >
-          <button
+          <div
             className={twMerge(
-              "absolute right-4 top-4",
-              "bg-gray-700",
-              "p-1 rounded-xl",
-              "hover:bg-gray-500",
+              "bg-gray-600",
+              "rounded-t-xl",
+              "z-20",
+              "pointer-events-auto",
+              "p-4",
+              "shadow-[0px_-3px_8px_3px_rgba(0,0,0,0.2)]",
+              "max-w-2xl",
+              "w-full",
+              "relative",
             )}
-            onClick={close}
           >
-            <XMarkIcon className="w-6 h-6 text-gray-200" />
-          </button>
-          {children}
-          {submit && (
             <button
               className={twMerge(
-                "bg-orange-500",
-                "p-2 rounded-md",
-                "hover:bg-orange-400",
-                "mt-4",
-                "absolute right-4",
-                "text-gray-800",
-                submitIsDisabled && "opacity-50 pointer-events-none",
+                "absolute right-4 top-4",
+                "bg-gray-700",
+                "p-1 rounded-xl",
+                "hover:bg-gray-500",
               )}
-              onClick={submitIsDisabled ? undefined : submit}
+              onClick={close}
             >
-              Submit
+              <XMarkIcon className="w-6 h-6 text-gray-200" />
             </button>
-          )}
-
+            {children}
+            {submit && (
+              <button
+                className={twMerge(
+                  "bg-orange-500",
+                  "p-2 rounded-md",
+                  "hover:bg-orange-400",
+                  "mt-4",
+                  "absolute right-4",
+                  "text-gray-800",
+                  submitIsDisabled && "opacity-50 pointer-events-none",
+                )}
+                onClick={submitIsDisabled ? undefined : submit}
+              >
+                Submit
+              </button>
+            )}
+          </div>
         </div>
       </div>
   );
