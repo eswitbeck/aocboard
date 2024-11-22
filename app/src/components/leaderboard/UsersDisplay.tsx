@@ -111,7 +111,9 @@ function MobilePreviewHeader({
         }
       `}
       </style>
-      <Link href="/">
+      <Link href="/" onClick={(e) => {
+        e.stopPropagation();
+      }}>
         <div className={twMerge(
           "flex justify-center items-center",
           "rounded-lg bg-gray-700 px-4 py-2",
@@ -146,7 +148,9 @@ function MobilePreviewHeader({
           />
         ))}
       </div>
-      <Link href="/">
+      <Link href="/" onClick={(e) => {
+        e.stopPropagation();
+      }}>
         <div className={twMerge(
           "flex justify-center items-center",
           "rounded-lg bg-gray-700 px-4 py-2",
