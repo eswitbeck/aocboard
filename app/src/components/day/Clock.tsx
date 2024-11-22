@@ -37,7 +37,10 @@ export default function Clock({
       className={twMerge(
         'flex justify-center items-center',
         'py-4 px-2 rounded-3xl mx-4',
+        'w-full',
+        'min-[470px]:max-w-md max-w-[calc(100%-2rem)]',
         'relative',
+        'self-center',
         isEditable
           ? 'cursor-pointer bg-gray-700 hover:bg-gray-600'
           : 'cursor-default bg-gray-700'
