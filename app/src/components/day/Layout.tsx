@@ -61,7 +61,6 @@ function Header ({
         "w-full min-h-16",
         "p-2 px-4",
         "flex justify-center items-center gap-2", 
-        "lg:hidden",
         "pt-[15px]", // for header
       )}
     >

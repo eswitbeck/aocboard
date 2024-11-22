@@ -68,13 +68,13 @@ function MobilePreviewHeader({
   return (
     <>
     <div className={twMerge(
-        "rounded-b-md w-full bg-gray-600 min-h-16",
+        "rounded-b-md bg-gray-600 min-h-16",
         "shadow-md p-2 px-4",
         "flex justify-center items-center gap-2", 
         "fixed",
-        "lg:hidden",
         "z-10",
         "pt-[30px]", // for animation
+        "left-0 right-0 mx-auto max-w-2xl box-border"
       )}
       onClick={() => setDropdownIsOpen(true)}
       style={{
@@ -185,12 +185,13 @@ function MobileDroppedDownHeader ({
   return (
     <div
       className={twMerge(
-        "lg:hidden",
-        "bg-gray-600 min-h-[75%] fixed w-full",
+        "bg-gray-600 min-h-[75%] fixed",
         "rounded-b-md",
         "p-4",
         "overflow-y-auto",
-        "shadow-md"
+        "shadow-md",
+        "max-w-2xl",
+        "left-0 right-0 mx-auto",
       )}
       style={{
         top: dropdownIsOpen ? "0" : "-100%",

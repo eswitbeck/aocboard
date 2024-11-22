@@ -19,7 +19,7 @@ export default function RootLayout({
           "flex justify-center",
         )}
       >
-        <div className="max-w-2xl">
+        <div className="max-w-full md:max-w-2xl">
           {children}
         </div>
       </body>
