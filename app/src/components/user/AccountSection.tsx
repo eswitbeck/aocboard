@@ -33,7 +33,8 @@ export default function AccountSection({
       {/* header if you want it */}
       <div className={twMerge(
         "flex flex-col gap-12 py-4 mt-[10%]",
-        "items-center"
+        "items-center",
+        "w-full"
       )}>
           <div className={twMerge(
             "flex flex-col gap-3",
@@ -61,8 +62,7 @@ export default function AccountSection({
                   "rounded-2xl px-4 py-2",
                   "bg-gray-600",
                   editingSelfName && "ring-2 ring-orange-500",
-                  "w-[60vw]",
-                  "overflow-x-scroll"
+                  "overflow-x-scroll w-full",
                 )}
               >
                 {!editingSelfName && (
@@ -125,7 +125,7 @@ export default function AccountSection({
                   "rounded-2xl px-4 py-2",
                   "bg-gray-600",
                   editingSelfLink && "ring-2 ring-orange-500",
-                  "w-[60vw]",
+                  "w-full",
                   "overflow-x-scroll",
                   "whitespace-nowrap"
                 )}
@@ -216,7 +216,7 @@ function ProfileSkeleton() {
           "flex justify-center items-center",
           "rounded-2xl px-4 py-2",
           "bg-gray-600",
-          "min-w-[60vw]",
+          "min-w-[244px]",
           "animate-pulse",
           "h-8"
         )}/>  
@@ -225,7 +225,7 @@ function ProfileSkeleton() {
             "flex justify-center items-center",
             "rounded-2xl px-4 py-2",
             "bg-gray-600",
-            "min-w-[60vw]",
+            "min-w-[244px]",
             "animate-pulse",
             "h-11"
           )}
@@ -235,7 +235,7 @@ function ProfileSkeleton() {
             "flex justify-center items-center",
             "rounded-2xl px-4 py-2",
             "bg-gray-600",
-            "min-w-[60vw]",
+            "w-full",
             "animate-pulse",
             "h-11"
           )}
