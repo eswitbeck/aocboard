@@ -10,11 +10,11 @@ services:
       - ./db/migrations:/home/migrations
     restart: unless-stopped
 
-  web:
+  web-dev:
     build:
       context: ./app
       dockerfile: ../web.dev.Dockerfile
-    container_name: web
+    container_name: web-dev
     depends_on:
       - db
     links:
