@@ -113,6 +113,11 @@ export default function Copy({
               )}
             </div>
           ))}
+          {leaderboardDayStatus.length === 0 && (
+            <Base className="text-gray-400">
+              No other leaderboards to copy to right now!
+            </Base>
+          )}
         </div>
       </div>
     </Modal>
