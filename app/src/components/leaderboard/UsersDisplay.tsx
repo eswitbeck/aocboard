@@ -61,10 +61,6 @@ function MobilePreviewHeader({
 }) {
   const [isFirstRender, setIsFirstRender] = useState(true);
 
-  useEffect(() => {
-    setIsFirstRender(false);
-  }, []);
-
   return (
     <>
     <div className={twMerge(
@@ -76,7 +72,10 @@ function MobilePreviewHeader({
         "pt-[30px]", // for animation
         "left-0 right-0 mx-auto max-w-2xl box-border"
       )}
-      onClick={() => setDropdownIsOpen(true)}
+      onClick={() => {
+        setDropdownIsOpen(true);
+        setIsFirstRender(false);
+      }}
       style={{
         animation: !isFirstRender ?
           dropdownIsOpen
