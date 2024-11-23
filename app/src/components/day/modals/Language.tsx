@@ -1,19 +1,26 @@
 import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { CheckIcon } from '@heroicons/react/20/solid';
+import { addLanguage as addLanguageApi } from '@/server/Main';
+
+import {
+  CheckIcon,
+  PlusIcon,
+} from '@heroicons/react/20/solid';
 
 import { H3, Base } from '../../core/text';
 
 import Modal from '../Modal';
 
 export default function Language({
+  userId,
   isOpen,
   close,
   currentLanguage,
   languages,
   updateLanguage,
 }: {
+  userId: number;
   isOpen: boolean;
   close: () => void;
   currentLanguage: string | null;
@@ -33,6 +40,21 @@ export default function Language({
     close();
     setSelectedLanguage(currentLanguageId || null);
   }
+
+  const handleAddLanguage = async (
+    name: string,
+    languages: { id: number; name: string }[]
+  ) => {
+    const resp = await addLanguageApi(userId, name);
+    if (resp.status !== 201) {
+      return;
+    }
+    const { id } = resp.body!.data;
+    // dangerously mutate
+    languages.push({ id, name });
+  }
+
+  const [newLanguageBuffer, setNewLanguageBuffer] = useState('');
 
   const handleSubmit = () => {
     if (selectedLanguage !== null) {
@@ -79,6 +101,43 @@ export default function Language({
               </Base>
             </div>
           ))}
+          <div className="flex gap-3 items-center">
+            <div className={twMerge(
+              "w-6 h-6 bg-gray-700 rounded-md",
+              "flex items-center justify-center",
+              "flex-shrink-0",
+            )}/>
+            <input
+              className={twMerge(
+                "w-full bg-transparent",
+                "focus:outline-none",
+                "placeholder-gray-500",
+                "px-2 py-1 bg-gray-700 rounded-md",
+                "min-w-[150px]",
+                "focus:ring-2 focus:ring-orange-500",
+              )}
+              placeholder="Add language"
+              value={newLanguageBuffer}
+              onChange={(e) => setNewLanguageBuffer(e.target.value)}
+            />
+            <button
+              className={twMerge(
+                "ml-2",
+                "text-gray-400",
+                "hover:text-gray-300",
+                "bg-gray-700",
+                "rounded-md p-1 px-2",
+                "focus:outline-none",
+                "focus:ring-2 focus:ring-orange-500",
+              )}
+              onClick={() => {
+                handleAddLanguage(newLanguageBuffer, languages);
+                setNewLanguageBuffer('');
+              }}
+            >
+              <PlusIcon className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
     </Modal>

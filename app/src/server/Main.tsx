@@ -2570,10 +2570,52 @@ export const getSelf = async (
   }
 }
 
+export const addLanguage = async (
+  userId: number | null,
+  name: string,
+): Promise<HTTPLike<{
+  id: number
+}>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  try {
+    const pool = getPool();
+    const { rows: [existing] } = await pool.query(
+      `SELECT id
+       FROM Language
+       WHERE name = $1;`,
+      [name]
+    );
+
+    if (existing) {
+      return { status: 409, error: 'language already exists' };
+    }
+
+    const { rows: [row] } = await pool.query(
+      `INSERT INTO Language
+       (name)
+       VALUES ($1)
+       RETURNING id;`,
+      [name]
+    );
+
+    return {
+      status: 201,
+      body: {
+        data: {
+          id: row.id
+        }
+      }
+    };
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+
+
 
 
 // add language to list
-
-// update account (link, password??, display name)
-// get account data
-//
