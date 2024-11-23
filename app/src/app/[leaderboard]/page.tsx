@@ -25,10 +25,16 @@ import {
 export default async function Page({
   params
 }: {
-  params: Promise<{ leaderboard: number }>
+  params: Promise<{ leaderboard: string }>
 }) {
-  const leaderboard = (await params).leaderboard;
+  const leaderboardParam = (await params).leaderboard;
   const userId = await getUserIdFromAccessToken();
+
+  if (!/\d+/.test(leaderboardParam)) {
+    return <ForbiddenPage />;
+  }
+
+  const leaderboard = parseInt(leaderboardParam);
 
   const usersResp = await getUsersByLeaderboard(
     userId,
