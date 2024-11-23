@@ -2239,14 +2239,17 @@ export const createInvitation = async (
       `INSERT INTO Invitation
        (code, expires_at, leaderboard_id)
        VALUES ($1, $2, $3)
-       RETURNING code;`,
+       RETURNING code, expires_at;`,
       [code, expiration, leaderboardId]
     );
 
     return {
       status: 201,
       body: {
-        data: { code }
+        data: {
+          code,
+          expires_at: expiration.toISOString()
+        }
       }
     };
   }

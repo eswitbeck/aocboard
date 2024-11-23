@@ -69,7 +69,10 @@ export default function Container({
       | '1 month'
       | '1 year'
       | 'never'
-  ) => Promise<HTTPLike<{}>>
+  ) => Promise<HTTPLike<{
+    code: string;
+    expires_at: string;
+  }>>
 }) {
 
   const getClosestExpiration = (expiresAt: string): '1 day'
@@ -431,7 +434,8 @@ export default function Container({
                             | '1 week'
                             | '1 month'
                             | '1 year'
-                            | 'never'
+                            | 'never',
+                          selectedLeaderboard
                         );
                       }
                     }

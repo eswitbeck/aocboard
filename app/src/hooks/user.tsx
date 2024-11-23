@@ -94,7 +94,10 @@ export const useLeaderboards = (
       | '1 month'
       | '1 year'
       | 'never'
-  ) => Promise<HTTPLike<{}>>,
+  ) => Promise<HTTPLike<{
+    code: string,
+    expires_at: string
+  }>>,
   updateInvitationApi: (
     leaderboardId: number,
     expiresAt: '1 day'
@@ -168,11 +171,30 @@ export const useLeaderboards = (
       | '1 week'
       | '1 month'
       | '1 year'
-      | 'never'
+      | 'never',
+    // serious hack here, I just don't have the time to 
+    // figure out how to do this properly
+    leaderboardForDangerousMutation: {
+      invitation: {
+        code: string,
+        expires_at: string
+      } | null
+    }
   ) => {
-    // TODO maybe figure out optimistic updates
-    await createInvitationApi(leaderboardId, expiresAt);
+    if (!leaderboards) {
+      return;
+    }
+    const result = await createInvitationApi(leaderboardId, expiresAt);
+    if (result.status !== 201) {
+      return;
+    }
+    const { code, expires_at } = result.body!.data;
     leaderboardsMutate();
+    // forgive me father for I have sinned
+    leaderboardForDangerousMutation.invitation = {
+      code,
+      expires_at
+    };
   }
 
   const updateInvitation = async (
