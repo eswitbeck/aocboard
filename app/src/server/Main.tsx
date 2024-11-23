@@ -1493,6 +1493,13 @@ export async function login(username: string, password: string) {
     sameSite: 'strict',
     expires: time.getTime() + 1000 * 60 * 15
   });
+
+  await pool.query(
+    `UPDATE AppUser
+     SET last_login = $1
+     WHERE id = $2;`,
+    [time, id]
+  );
 }
 
 export async function logout() {
