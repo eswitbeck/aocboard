@@ -1,32 +1,36 @@
 services:
   db:
     image: postgres:16.4-alpine
-    container_name: db
     env_file: .env
     networks:
       - main
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./db/migrations:/home/migrations
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -h localhost -d $$POSTGRES_DB || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
     build:
       context: ./app
       dockerfile: ../web.Dockerfile
-    container_name: web
     depends_on:
-      - db
-    links:
-      - db
+      db:
+        condition: service_healthy
     env_file: .env
     networks:
       - main
-    restart: on-failure:3
-    expose:
-      - 3000
+    restart: unless-stopped
     ports:
       - 3000:3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   main:
