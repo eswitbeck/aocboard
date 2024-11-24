@@ -178,19 +178,31 @@ function MobileDroppedDownHeader ({
   dropdownIsOpen: boolean,
   setDropdownIsOpen: (arg0: boolean) => void
 }) {
+  const userRankings: number[] = [];
+  users.forEach(({
+    score,
+  }, i) => {
+    if (i === 0) {
+      userRankings.push(0);
+    } else if (score === users[i - 1].score) {
+      userRankings.push(userRankings[i - 1]);
+    } else {
+      userRankings.push(i);
+    }
+  });
+
   const places = {
     '1': '🥇',
     '2': '🥈',
     '3': '🥉',
   } as Record<string, string>;
+
   return (
     <div
       className={twMerge(
-        "bg-gray-600 min-h-[75%] fixed",
+        "bg-gray-600 h-[85%] fixed",
         "rounded-b-md",
         "p-4",
-        "overflow-y-auto",
-        "max-h-[75%]",
         "shadow-md",
         "max-w-2xl",
         "left-0 right-0 mx-auto",
@@ -202,70 +214,74 @@ function MobileDroppedDownHeader ({
       }}
       onClick={() => setDropdownIsOpen(false)}
     >
-      {users.map(({
-        id,
-        display_name,
-        link,
-        score,
-        avatar_color
-      }, i) => (
-        <div className={twMerge(
-          i === 0 ? "mt-[15px]" : "", // for header
-          "grid grid-cols-10 gap-2",
-          "items-center"
-        )} key={id}>
+      <div className={twMerge(
+        "h-full overflow-y-auto w-full",
+        "flex flex-col gap-2"
+      )}>
+        {users.map(({
+          id,
+          display_name,
+          link,
+          score,
+          avatar_color
+        }, i) => (
           <div className={twMerge(
-            "col-span-1",
-            "flex justify-center items-center"
-          )}>
-            {places[i + 1] ? (
-              <Base className="text-2xl">
-                {places[i + 1]}
-              </Base>
-            ) :
-            (<Base className="text-gray-300 text-2xl">
-              {i + 1}
-            </Base>)
-            }
-          </div>
-          <div
-            className={twMerge(
-              "flex justify-between items-center",
-              "bg-gray-700 rounded-lg p-2",
-              "mb-2",
-              "col-span-9"
-            )}
-          >
-            <Avatar
-              user={{ display_name, link, avatar_color }}
-              size="lg"
-            />
+            "grid grid-cols-10 gap-2",
+            "items-center"
+          )} key={id}>
             <div className={twMerge(
-              "flex flex-col gap-2 justify-between",
-              "items-end"
+              "col-span-1",
+              "flex justify-center items-center"
             )}>
-              {link ? (
-                <A
-                  href={link}
-                  className={twMerge(
-                    "text-2xl"
-                  )}
-                >
-                  {display_name}
-                </A>
-              )
-              : 
-              <H3 className="text-gray-200 text-2xl my-0">
-                {display_name}
-              </H3>
+              {places[userRankings[i] + 1] ? (
+                <Base className="text-2xl">
+                  {places[userRankings[i] + 1]}
+                </Base>
+              ) :
+              (<Base className="text-gray-300 text-2xl">
+                {userRankings[i] + 1}
+              </Base>)
               }
-              <Base className="text-gray-300 text-xl">
-                {score}
-              </Base>
+            </div>
+            <div
+              className={twMerge(
+                "flex justify-between items-center",
+                "bg-gray-700 rounded-lg p-2",
+                "mb-2",
+                "col-span-9"
+              )}
+            >
+              <Avatar
+                user={{ display_name, link, avatar_color }}
+                size="lg"
+              />
+              <div className={twMerge(
+                "flex flex-col gap-2 justify-between",
+                "items-end"
+              )}>
+                {link ? (
+                  <A
+                    href={link}
+                    className={twMerge(
+                      "text-2xl"
+                    )}
+                  >
+                    {display_name}
+                  </A>
+                )
+                : 
+                <H3 className="text-gray-200 text-2xl my-0">
+                  {display_name}
+                </H3>
+                }
+                <Base className="text-gray-300 text-xl">
+                  {score}
+                </Base>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
