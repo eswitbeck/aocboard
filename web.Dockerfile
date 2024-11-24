@@ -3,6 +3,10 @@
 # build 
 FROM node:20-bookworm
 WORKDIR /build
+
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 COPY . /build
 RUN npm install
 RUN npm run build
