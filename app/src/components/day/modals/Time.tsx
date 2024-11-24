@@ -224,7 +224,7 @@ export default function Time({
           "flex flex-col gap-2 p-4 py-2",
           "bg-gray-800 rounded-md",
           "overflow-y-auto",
-          "h-[45vh]"
+          "h-[40vh]"
         )}>
           {timesBuffer!.map((time, i) => {
             const Icon = iconLookup[times[i].type];

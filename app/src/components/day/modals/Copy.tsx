@@ -79,7 +79,7 @@ export default function Copy({
         <div className={twMerge(
           "flex flex-col gap-2 p-4",
           "bg-gray-800 rounded-md",
-          "max-h-[45vh]",
+          "max-h-[40vh]",
           "overflow-y-auto",
           "mt-4",
         )}>
