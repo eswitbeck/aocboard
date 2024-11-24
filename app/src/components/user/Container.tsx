@@ -551,7 +551,7 @@ export default function Container({
                       {leaderboard.name}
                     </Base>
                   </Link>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center mb-3">
                     <div className="flex gap-2 items-center">
                       {owner && (
                       <>
@@ -565,7 +565,7 @@ export default function Container({
                         </Small>
                       </>)}
                     </div>
-                    <div className="flex gap-2 items-center mb-3">
+                    <div className="flex gap-2 items-center items-center">
                       <Small className="text-gray-400">
                         Created {new Date(
                           timestamp2Timestamp(leaderboard.created_at) as string
