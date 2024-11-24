@@ -76,7 +76,7 @@ export default function Years({
         )}>
           <div className="flex flex-col">
             <div className="flex gap-2 justify-between items-center mb-3">
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Avatar
                   user={userMap[leaderboardDetails.owner_id]}
                   size="xs"
