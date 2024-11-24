@@ -10,7 +10,7 @@ export default function ForbiddenPage() {
       <div className="flex flex-col gap-4 mt-32 mx-4">
         <div className={twMerge(
           "p-4 rounded-xl flex flex-col gap-4",
-          "bg-gray-700"
+          "bg-gray-600"
         )}>
           <H1>
             Nothing to see here

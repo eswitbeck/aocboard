@@ -27,7 +27,10 @@ export default async function JoinPage({
 
   if (401 === status) {
     return (
-      <div className="flex flex-col gap-8 items-center mt-[34%] mx-12">
+      <div className={twMerge(
+        "flex flex-col gap-8 items-center",
+        "mt-[34%] mx-12 md:mt-[25%]"
+      )}>
         <Base className="text-gray-300 text-lg text-center">
           You need to be logged in to join a leaderboard.
         </Base>

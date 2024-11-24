@@ -49,7 +49,7 @@ function Login({
     ? `/create-account?redirect=${encodeURIComponent(redirectLocation)}`
     : '/create-account';
   return (
-    <div className="flex flex-col gap-2 items-center mt-[34%]">
+    <div className="flex flex-col gap-2 items-center mt-[34%] md:mt-[25%]">
       <H1>Log in</H1>
       <LoginButton login={loginCallback} />
       <Link

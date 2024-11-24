@@ -34,7 +34,10 @@ export default async function Page({
 
 function LoggedInPage({}) {
   return (
-    <div className="flex flex-col gap-2 items-center mt-[34%] mx-12">
+    <div className={twMerge(
+      "flex flex-col gap-2 items-center",
+      "mt-[34%] mx-12 md:mt-[25%]"
+    )}>
       <H1>Create Account</H1>
       <Base className="text-gray-300 text-lg text-center mb-12">
         You are already logged in. You&apos;ll need to log out to create a new account.
@@ -73,7 +76,10 @@ function CreateAccountPage({
     : '/login';
 
   return (
-    <div className="flex flex-col gap-2 items-center mt-[34%]">
+    <div className={twMerge(
+      "flex flex-col gap-2 items-center",
+      "mt-[34%] md:mt-[25%]"
+    )}>
       <H1>Create Account</H1>
       <RegisterButtons register={loginCallback} />
       <Base className="text-gray-400 text-center mt-8">
