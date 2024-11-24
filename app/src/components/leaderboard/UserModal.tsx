@@ -163,6 +163,7 @@ export default function UserModal({
           'overflow-auto'
         )}>
           <Base className={twMerge(
+            "whitespace-pre-wrap",
             submission.note
               ? "text-gray-400"
               : "text-gray-500"

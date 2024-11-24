@@ -105,7 +105,7 @@ export default function Years({
             </H1>
           </div>
           {leaderboardDetails.note && (
-            <Base className="text-gray-300">
+            <Base className="text-gray-300 whitespace-pre-wrap">
               {leaderboardDetails.note}
             </Base>
           )}

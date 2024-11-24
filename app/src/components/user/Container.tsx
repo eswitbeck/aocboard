@@ -592,7 +592,7 @@ export default function Container({
                     "bg-gray-700 p-2 rounded-lg w-full h-24 overflow-y-auto"
                   )}>
                     <Base className={twMerge(
-                      "text-sm",
+                      "text-sm whitespace-pre-wrap",
                       leaderboard.note ? "text-gray-300" : "text-gray-500"
                     )}>
                       {leaderboard.note || 'No note'} 
