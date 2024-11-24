@@ -558,7 +558,6 @@ export default function Container({
                         <Avatar
                           user={owner}
                           size="xs"
-                          className="outline-gray-600"
                         />
                         <Small className="text-gray-400">
                           {owner.display_name.slice(0, 10) +

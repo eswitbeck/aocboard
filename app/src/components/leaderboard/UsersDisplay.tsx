@@ -127,7 +127,7 @@ function MobilePreviewHeader({
         twMerge(
           "w-full max-w-4xl bg-gray-700 min-h-12",
           "rounded-lg p-2",
-          "flex",
+          "flex overflow-x-auto",
         )}
       >
         {users.map(({
@@ -140,7 +140,6 @@ function MobilePreviewHeader({
             user={{ display_name, link, avatar_color }}
             className={twMerge(
               i !== 0 && "-ml-2",
-              "outline-gray-700"
             )}
             key={id}
             size="md"
@@ -157,7 +156,6 @@ function MobilePreviewHeader({
         )}>
           <Avatar
             size="sm"
-            className="outline-gray-700"
             user={{
               display_name: currentUser.display_name,
               link: '/',
@@ -192,6 +190,7 @@ function MobileDroppedDownHeader ({
         "rounded-b-md",
         "p-4",
         "overflow-y-auto",
+        "max-h-[75%]",
         "shadow-md",
         "max-w-2xl",
         "left-0 right-0 mx-auto",
@@ -240,7 +239,6 @@ function MobileDroppedDownHeader ({
             <Avatar
               user={{ display_name, link, avatar_color }}
               size="lg"
-              className="outline-gray-700"
             />
             <div className={twMerge(
               "flex flex-col gap-2 justify-between",

@@ -97,7 +97,6 @@ function Header ({
         )}>
           <Avatar
             size="sm"
-            className="outline-gray-700"
             user={{
               display_name: currentUser.display_name,
               link: '/',

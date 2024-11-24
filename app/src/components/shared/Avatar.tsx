@@ -113,8 +113,6 @@ export default function Avatar({
           AVATAR_COLORS[user.avatar_color].border,
           AVATAR_COLORS[user.avatar_color].bg,
           "flex justify-center items-center",
-          "outline",
-          `outline-gray-900`,
           className
         )}
       >

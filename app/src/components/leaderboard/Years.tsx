@@ -80,7 +80,6 @@ export default function Years({
                 <Avatar
                   user={userMap[leaderboardDetails.owner_id]}
                   size="xs"
-                  className="outline-gray-800"
                 />
                 {userMap[leaderboardDetails.owner_id].link ? (
                     <A
@@ -391,7 +390,6 @@ function DayRow({
                 size="md"
                 key={id}
                 disabled={!complete[1] && !complete.isActive}
-                className="outline-gray-800"
                 />
               </div>
           ))}

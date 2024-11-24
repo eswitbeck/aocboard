@@ -92,7 +92,6 @@ export default function UserModal({
           <Avatar
             user={userMap[submission.user_id]}
             size='lg'
-            className="outline-gray-700"
           />
           <div className={twMerge(
             'flex flex-col'
@@ -204,7 +203,6 @@ function EmptyModal({
           <Avatar
             user={userMap[userId]}
             size='lg'
-            className="outline-gray-700"
             disabled
           />
           <div className={twMerge(
