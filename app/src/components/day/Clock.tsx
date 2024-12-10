@@ -29,7 +29,20 @@ export default function Clock({
   }, []);
 
   if (!isMounted) {
-    return null;
+    return (
+      <div
+        className={twMerge(
+          'py-4 px-2 rounded-3xl mx-4',
+          'w-full',
+          'h-24',
+          'min-[470px]:max-w-md max-w-[calc(100%-2rem)]',
+          'relative',
+          'self-center',
+          'animate-pulse',
+          'bg-gray-700'
+        )}
+      />
+    );
   }
 
   return (
@@ -37,6 +50,7 @@ export default function Clock({
       className={twMerge(
         'flex justify-center items-center',
         'py-4 px-2 rounded-3xl mx-4',
+        'h-24',
         'w-full',
         'min-[470px]:max-w-md max-w-[calc(100%-2rem)]',
         'relative',
