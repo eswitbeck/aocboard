@@ -247,8 +247,10 @@ function MobileDroppedDownHeader ({
               className={twMerge(
                 "flex justify-between items-center",
                 "bg-gray-700 rounded-lg p-2",
+                "gap-1",
                 "mb-2",
-                "col-span-9"
+                "col-span-9",
+                "min-w-0"
               )}
             >
               <Avatar
@@ -257,24 +259,32 @@ function MobileDroppedDownHeader ({
               />
               <div className={twMerge(
                 "flex flex-col gap-2 justify-between",
-                "items-end"
+                "min-w-0",
               )}>
-                {link ? (
-                  <A
-                    href={link}
-                    className={twMerge(
-                      "text-2xl"
-                    )}
-                  >
-                    {display_name}
-                  </A>
-                )
-                : 
-                <H3 className="text-gray-200 text-2xl my-0">
-                  {display_name}
-                </H3>
-                }
-                <Base className="text-gray-300 text-xl">
+                <div className={twMerge(
+                  "overflow-x-auto",
+                  "whitespace-nowrap",
+                  "flex-shrink",
+                  "min-w-0",
+                  "text-right"
+                )}>
+                  {link ? (
+                    <A
+                      href={link}
+                      className={twMerge(
+                        "text-2xl",
+                      )}
+                    >
+                      {display_name}
+                    </A>
+                  )
+                  : (
+                    <H3 className="text-gray-200 text-2xl my-0">
+                      {display_name}
+                    </H3>
+                  )}
+                </div>
+                <Base className="text-gray-300 text-xl text-right">
                   {score}
                 </Base>
               </div>
