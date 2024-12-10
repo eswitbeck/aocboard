@@ -8,6 +8,10 @@ import {
   CodeBracketIcon
 } from '@heroicons/react/24/outline';
 
+import {
+  Small
+} from '@/components/core/text';
+
 export default function Icons({
   isDisabled,
   toggleCommentModal,
@@ -22,8 +26,10 @@ export default function Icons({
   toggleLanguageModal?: () => void
 }) {
   const divClasses = twMerge(
-    "p-2 rounded-2xl",
-    isDisabled ? "bg-gray-700" : "bg-gray-600 cursor-pointer"
+    "p-1 rounded-2xl",
+    "h-14 w-14",
+    isDisabled ? "bg-gray-700" : "bg-gray-600 cursor-pointer",
+    "flex flex-col justify-center items-center"
   );
   const classes = twMerge(
     "w-8 h-8",
@@ -39,6 +45,11 @@ export default function Icons({
         <ChatBubbleBottomCenterTextIcon className={twMerge(
           classes
         )} />
+        <Small className={twMerge(
+          isDisabled ? "text-gray-600" : "text-gray-400"
+        )}>
+          Note
+        </Small>
       </div>
       <div
         className={divClasses}
@@ -47,6 +58,11 @@ export default function Icons({
         <LinkIcon className={twMerge(
           classes
         )} />
+        <Small className={twMerge(
+          isDisabled ? "text-gray-600" : "text-gray-400"
+        )}>
+          Link
+        </Small>
       </div>
       <div
         className={divClasses}
@@ -55,6 +71,11 @@ export default function Icons({
         <DocumentDuplicateIcon className={twMerge(
           classes
         )} />
+        <Small className={twMerge(
+          isDisabled ? "text-gray-600" : "text-gray-400"
+        )}>
+          Copy
+        </Small>
       </div>
       <div
         className={divClasses}
@@ -63,6 +84,11 @@ export default function Icons({
         <CodeBracketIcon className={twMerge(
           classes
         )} />
+        <Small className={twMerge(
+          isDisabled ? "text-gray-600" : "text-gray-400"
+        )}>
+          Lang.
+        </Small>
       </div>
     </div>
   );

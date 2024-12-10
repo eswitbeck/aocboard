@@ -10,6 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 
 import {
+  Small
+} from '@/components/core/text';
+
+import {
   PlayIcon as SolidPlayIcon,
   PauseIcon as SolidPauseIcon,
   StarIcon as SolidStarIcon
@@ -38,8 +42,9 @@ export default function Buttons({
     )}>
       <div
         className={twMerge(
-          "flex justify-center items-center",
-          "p-2 rounded-2xl",
+          "flex flex-col justify-center items-center",
+          "gap-1 p-2 rounded-2xl",
+          "w-20 h-20",
           disabled.undo ? "bg-gray-800" : "bg-gray-700 cursor-pointer"
         )}
         onClick={disabled.undo
@@ -49,13 +54,22 @@ export default function Buttons({
         <ArrowUturnLeftIcon
           className={twMerge(
             disabled.undo ? "text-gray-700" : "text-gray-400",
-            "w-12 h-12"
+            "w-10 h-10"
           )}
         />
+        <Small
+          className={twMerge(
+            disabled.undo ? "text-gray-700" : "text-gray-400",
+            "text-base"
+          )}
+        >
+          Undo
+        </Small>
       </div>
       <div
         className={twMerge(
-          "flex justify-center items-center",
+          "flex justify-center items-center flex-col gap-1",
+          "w-28 h-28",
           "p-2 rounded-3xl",
           "relative",
           disabled.star ? "bg-gray-800" : "bg-orange-500 cursor-pointer"
@@ -80,6 +94,14 @@ export default function Buttons({
             )}
           />
         )} 
+        <Small
+          className={twMerge(
+            disabled.star ? "text-gray-700" : "text-gray-800",
+            "text-base"
+          )}
+        >
+          Claim Star
+        </Small>
         <PlusIcon
           className={twMerge(
             disabled.star ? "text-gray-700" : "text-gray-800",
@@ -90,7 +112,9 @@ export default function Buttons({
       </div>
       <div
         className={twMerge(
-          "flex justify-center items-center",
+          "flex justify-center items-center flex-col",
+          "gap-1",
+          "w-20 h-20",
           "p-2 rounded-2xl",
           disabled.pause ? "bg-gray-800" :
             functions.isPause ? "bg-gray-700 cursor-pointer" :
@@ -133,6 +157,16 @@ export default function Buttons({
             />
           )
         )}
+        <Small className={twMerge(
+          functions.isPause
+            ? disabled.pause
+              ? "text-gray-800"
+              : "text-gray-400"
+            : "text-gray-700",
+          "text-base"
+        )}>
+          {functions.isPause ? "Pause" : "Start"}
+        </Small>
       </div>
     </div>
   );
