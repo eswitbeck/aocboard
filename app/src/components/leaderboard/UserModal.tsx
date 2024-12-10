@@ -82,6 +82,7 @@ export default function UserModal({
         className={twMerge(
           'bg-gray-700 rounded-lg',
           'p-4',
+          'w-[34rem]',
           'max-w-[90%]'
         )}
       >
@@ -113,15 +114,16 @@ export default function UserModal({
               'flex gap-2'
             )}>
               {submission.link ? (
-                <A href={submission.link} className="text-sm text-gray-400">
+                <A href={submission.link} className="text-base text-gray-400">
                    code
                 </A>
               ) : (
-                <Small className="text-gray-500">
+                <Small className="text-gray-500 text-base">
                   no link
                 </Small>
               )}
               <Small className={twMerge(
+                "text-base",
                 !submission.language && !submission.link
                   ? "text-gray-500"
                   : "text-gray-400"
@@ -129,11 +131,11 @@ export default function UserModal({
                 ·
               </Small>
               {submission.language ? (
-                <Small className="text-gray-400">
+                <Small className="text-gray-400 text-base">
                   {submission.language}
                 </Small>
               ) : (
-                <Small className="text-gray-500">
+                <Small className="text-gray-500 text-base">
                   no language
                 </Small>
               )}
@@ -194,7 +196,9 @@ function EmptyModal({
     >
       <div className={twMerge(
         'bg-gray-700 rounded-lg',
-        'p-4'
+        'p-4',
+        'w-[34rem]',
+        'max-w-[90%]'
       )}>
         <div className={twMerge(
           'flex gap-8 items-center',
@@ -224,15 +228,15 @@ function EmptyModal({
             <div className={twMerge(
               'flex gap-2'
             )}>
-              <Small className="text-gray-500">
+              <Small className="text-gray-500 text-base">
                 no link
               </Small>
               <Small className={twMerge(
-                "text-gray-400"
+                "text-gray-400 text-base"
               )}>
                 ·
               </Small>
-              <Small className="text-gray-500">
+              <Small className="text-gray-500 text-base">
                 no language
               </Small>
             </div>
