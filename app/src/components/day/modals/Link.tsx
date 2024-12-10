@@ -79,9 +79,11 @@ export default function Language({
               "text-white",
               "resize-none",
               "focus:outline-none",
+              "placeholder-gray-600",
             )}
             value={linkBuffer || ''}
             onChange={(e) => setLinkBuffer(e.target.value)}
+            placeholder="Add a link to your solution"
           />
         </div>
         <Small className={twMerge(
