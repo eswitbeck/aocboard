@@ -149,9 +149,16 @@ export default function Time({
     return isOverlapping(i) || isIncomplete(i);
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const reformat = (time: string) => {
-      return new Date(time).toISOString();
+      // time coming in as MM/DD/YYYY HH:MM:SS.MMM
+      const groups = time.match(
+        /(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})\.(\d{3})/
+      );
+      const [, month, day, year, hour, minute, second, millisecond] = groups!;
+      const reformattedTime = `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}`;
+      console.log(reformattedTime);
+      return new Date(reformattedTime).toISOString();
     }
 
     if (!times) {
@@ -176,26 +183,30 @@ export default function Time({
     }
 
     const promises = updates
-      .reverse() // an ill-advised attempt to get these to resolve in 
-      // non-conflicting order. Worst case, we just await them in blocking order.
       // The longer term solution is to set up a batch update
-      .map((time) => {
-        switch (time.type) {
-          case 'start':
-            return updateStartTime(time.timestamp);
-          case 'pause':
-            return updatePause(time.timestamp, times[time.i].id as number);
-          case 'resume':
-            return updatePause(time.timestamp, times[time.i].id as number);
-          case 'star_1':
-            return updateStar(time.timestamp, 'star_1');
-          case 'star_2':
-            return updateStar(time.timestamp, 'star_2');
-        }
+    for (const time of promises) {
+      console.log(
+        `Updating ${time.type} at ${time.timestamp}`
+      );
+      switch (time.type) {
+        case 'start':
+          await updateStartTime(time.timestamp);
+          break;
+        case 'pause':
+          await updatePause(time.timestamp, times[time.i].id as number);
+          break;
+        case 'resume':
+          await updatePause(time.timestamp, times[time.i].id as number);
+          break;
+        case 'star_1':
+          await updateStar(time.timestamp, 'star_1');
+          break;
+        case 'star_2':
+          await updateStar(time.timestamp, 'star_2');
+          break;
       }
-    );
+    }
 
-    Promise.all(promises);
     close();
   }
 
