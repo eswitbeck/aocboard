@@ -2615,6 +2615,140 @@ export const addLanguage = async (
   }
 }
 
+export const batchUpdateTimes = async (
+  userId: number | null,
+  leaderboardId: number,
+  year: number,
+  day: number,
+  updates: {
+    type: 'start' | 'star_1' | 'star_2' | 'pause' | 'resume',
+    time: string,
+    id?: number
+  }[]
+): Promise<HTTPLike<{}>> => {
+  if (!userId) {
+    return { status: 401 };
+  }
+
+  const fn = async (client: pg.PoolClient) => {
+    const { rows: sourceSubmission } = await client.query(
+      `SELECT
+        s.start_time,
+        s.star_1_end_time,
+        s.star_2_end_time,
+        sp.id as sp_id,
+        sp.parent_id as sp_parent_id,
+        sp.type as sp_type,
+        sp.time as sp_time
+       FROM Submission s
+       LEFT JOIN SubmissionPause sp
+        USING(user_id, day, year, leaderboard_id)
+       WHERE user_id = $1
+         AND day = $2
+         AND year = $3
+         AND leaderboard_id = $4;`,
+      [userId, day, year, leaderboardId]
+    );
+
+    if (!sourceSubmission[0]) {
+      return { status: 404 };
+    }
+
+    const existingEvents = [
+      {
+        type: 'start',
+        time: sourceSubmission[0].start_time
+      },
+      {
+        type: 'star_1',
+        time: sourceSubmission[0].star_1_end_time
+      },
+      {
+        type: 'star_2',
+        time: sourceSubmission[0].star_2_end_time
+      }
+    ] as {
+      type: 'start' | 'star_1' | 'star_2' | 'pause' | 'resume',
+      time: Date,
+      id?: number
+    }[];
+
+    for (const pause of sourceSubmission) {
+      if (pause.sp_id === null) {
+        continue;
+      }
+      existingEvents.push({
+        type: pause.sp_type,
+        time: pause.sp_time,
+        id: pause.sp_id
+      });
+    }
+
+    existingEvents.sort((a, b) => a.time.getTime() - b.time.getTime());
+    const sortedUpdates = updates
+      .map(update => ({
+        ...update,
+        time: new Date(update.time)
+      }))
+      .sort((a, b) => a.time.getTime() - b.time.getTime());
+
+    let i = 0, j = 0;
+    for (; i < existingEvents.length; i++) {
+      const existing = existingEvents[i];
+      const update = sortedUpdates[j];
+
+      if (existing.type !== update.type || 
+          // different pauses with same type
+          (existing.id !== undefined && existing.id !== update.id)) {
+        continue;
+      }
+
+      existing['time'] = update.time;
+      j++;
+    }
+
+    if (j !== sortedUpdates.length) {
+      return { status: 400, error: 'invalid update sequence' };
+    }
+
+    for (let i = 0; i < existingEvents.length - 1; i++) {
+      if (existingEvents[i].time > existingEvents[i + 1].time) {
+        return { status: 400, error: 'invalid update sequence' };
+      }
+    }
+
+    const fieldMap = {
+      'start': 'start_time',
+      'star_1': 'star_1_end_time',
+      'star_2': 'star_2_end_time'
+    };
+
+    const submissionUpdates = updates.map(
+      ({ type, time }) => {
+        if (type === 'pause' || type === 'resume') {
+          return null;
+        }
+        return {
+          type: fieldMap[type],
+          time
+        };
+      }
+    ).filter(Boolean);
+
+
+  }
+
+  try {
+    return await withTransaction(fn);
+  } catch (error) {
+    // @ts-ignore
+    return { status: 500, error: error2String(error) };
+  }
+}
+     
+
+
+
 
 
 

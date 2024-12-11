@@ -157,7 +157,6 @@ export default function Time({
       );
       const [, month, day, year, hour, minute, second, millisecond] = groups!;
       const reformattedTime = `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}`;
-      console.log(reformattedTime);
       return new Date(reformattedTime).toISOString();
     }
 
@@ -185,9 +184,6 @@ export default function Time({
     const promises = updates
       // The longer term solution is to set up a batch update
     for (const time of promises) {
-      console.log(
-        `Updating ${time.type} at ${time.timestamp}`
-      );
       switch (time.type) {
         case 'start':
           await updateStartTime(time.timestamp);
