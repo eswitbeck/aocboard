@@ -64,7 +64,7 @@ export default function AccountSection({
                   "h-11 min-w-[244px]",
                   "bg-gray-600",
                   editingSelfName && "ring-2 ring-orange-500",
-                  "overflow-x-scroll w-full",
+                  "overflow-x-auto w-full",
                 )}
               >
                 {!editingSelfName && (
@@ -129,7 +129,7 @@ export default function AccountSection({
                   editingSelfLink && "ring-2 ring-orange-500",
                   "w-full",
                   "h-11 min-w-[244px]",
-                  "overflow-x-scroll",
+                  "overflow-x-auto",
                   "whitespace-nowrap"
                 )}
               >
