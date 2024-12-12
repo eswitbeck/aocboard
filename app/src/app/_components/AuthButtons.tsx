@@ -32,6 +32,7 @@ export function LoginButton({
         ref={usernameRef}
         className={twMerge(
           'rounded-2xl',
+          'w-44',
           'p-2',
           'focus:outline-none',
           'focus:ring-2 focus:ring-orange-500',
@@ -46,6 +47,7 @@ export function LoginButton({
         ref={passwordRef}
         className={twMerge(
           'rounded-2xl',
+          'w-44',
           'p-2',
           'focus:outline-none',
           'focus:ring-2 focus:ring-orange-500',
