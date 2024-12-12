@@ -14,9 +14,8 @@ import {
   resumeSubmission,
   undoStar,
 
-  updatePause,
-  updateStartTime,
-  updateStarTime,
+  batchUpdateTimes,
+
   getLanguages,
   updateLanguage,
   updateSubmission,
@@ -122,9 +121,7 @@ export default async function SubmissionPage({
         languages={(await getLanguages()).body!.data}
         updateLanguageApi={wrapFn(updateLanguage, leaderboard)}
         updateSubmission={wrapFn(updateSubmission, leaderboard)}
-        updateStartTimeApi={wrapFn(updateStartTime, leaderboard)}
-        updateStarTimeApi={wrapFn(updateStarTime, leaderboard)}
-        updatePauseApi={wrapFn(updatePause, leaderboard)}
+        batchUpdateTimesApi={wrapFn(batchUpdateTimes, leaderboard)}
         leaderboardDayStatus={leaderboardDayStatus}
         copyDay={async (
           userId: number,

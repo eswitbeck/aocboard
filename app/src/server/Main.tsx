@@ -2617,14 +2617,10 @@ export const addLanguage = async (
 
 export const batchUpdateTimes = async (
   userId: number | null,
-  leaderboardId: number,
-  year: number,
   day: number,
-  updates: {
-    type: 'start' | 'star_1' | 'star_2' | 'pause' | 'resume',
-    time: string,
-    id?: number
-  }[]
+  year: number,
+  leaderboardId: number,
+  updates: EventTime[]
 ): Promise<HTTPLike<{}>> => {
   if (!userId) {
     return { status: 401 };
@@ -2667,7 +2663,7 @@ export const batchUpdateTimes = async (
         type: 'star_2',
         time: sourceSubmission[0].star_2_end_time
       }
-    ] as {
+    ].filter(({ time }) => time !== null) as {
       type: 'start' | 'star_1' | 'star_2' | 'pause' | 'resume',
       time: Date,
       id?: number
@@ -2688,12 +2684,12 @@ export const batchUpdateTimes = async (
     const sortedUpdates = updates
       .map(update => ({
         ...update,
-        time: new Date(update.time)
+        time: new Date(update.timestamp)
       }))
       .sort((a, b) => a.time.getTime() - b.time.getTime());
 
     let i = 0, j = 0;
-    for (; i < existingEvents.length; i++) {
+    for (; i < existingEvents.length && j < sortedUpdates.length; i++) {
       const existing = existingEvents[i];
       const update = sortedUpdates[j];
 
@@ -2724,18 +2720,98 @@ export const batchUpdateTimes = async (
     };
 
     const submissionUpdates = updates.map(
-      ({ type, time }) => {
+      ({ type, timestamp }) => {
         if (type === 'pause' || type === 'resume') {
           return null;
         }
         return {
           type: fieldMap[type],
-          time
+          timestamp
         };
       }
-    ).filter(Boolean);
+    ).filter(x => x) as {
+      type: string,
+      timestamp: string
+    }[];
 
+    if (submissionUpdates.length > 0) {
+      const sets = submissionUpdates.map(
+        ({ type }, i) => `${type} = $${i + 5}`
+      ).join(', ');
 
+      await client.query(
+        `UPDATE Submission
+         SET ${sets}
+         WHERE user_id = $1
+          AND day = $2
+          AND year = $3
+          AND leaderboard_id = $4;`,
+        [
+           userId,
+           day,
+           year,
+           leaderboardId,
+           ...submissionUpdates.map(({ timestamp }) => timestamp)
+         ]
+      );
+    }
+
+    const pauseUpdates = updates.filter(
+      ({ type, id }) => type === 'pause' || type === 'resume' && id !== undefined
+    ) as (EventTime & { parent_id?: number })[];
+
+    if (pauseUpdates.length > 0) {
+      pauseUpdates.sort((a, b) => a.id! - b.id!);
+      const select = pauseUpdates.map(({ id }) => `SELECT ${id} id`)
+        .join(' UNION ALL ');
+
+      const { rows: parentIds } = await client.query(
+        `WITH ids AS (
+          ${select}
+        )
+        SELECT
+          sp.id,
+          sp.parent_id
+        FROM ids
+        JOIN SubmissionPause sp
+          ON sp.id = ids.id
+        ORDER BY sp.id ASC;`
+      );
+
+      for (let i = 0; i < pauseUpdates.length; i++) {
+        pauseUpdates[i].parent_id = parentIds[i].parent_id;
+      }
+
+      const insertValues = pauseUpdates.map(
+        ({ type, timestamp, id, parent_id }) => {
+          return `(
+            ${userId},
+            ${day},
+            ${year},
+            ${leaderboardId},
+            ${id!},
+            '${type}',
+            '${timestamp}',
+            ${parent_id ?? null}
+          )`;
+        }
+      );
+
+      await client.query(
+        `INSERT INTO SubmissionPause
+         (user_id, day, year, leaderboard_id, id, type, time, parent_id)
+         VALUES ${insertValues}
+         ON CONFLICT (id)
+         DO UPDATE SET
+           time = EXCLUDED.time;`
+      );
+    }
+
+    await updateScores(client, leaderboardId, year, day);
+
+    return {
+      status: 200
+    };
   }
 
   try {
@@ -2745,11 +2821,3 @@ export const batchUpdateTimes = async (
     return { status: 500, error: error2String(error) };
   }
 }
-     
-
-
-
-
-
-
-// add language to list

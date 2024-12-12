@@ -55,9 +55,7 @@ export default function Container({
   languages,
   updateLanguageApi,
   updateSubmission,
-  updateStartTimeApi,
-  updateStarTimeApi,
-  updatePauseApi,
+  batchUpdateTimesApi,
   leaderboardDayStatus,
   copyDay
 }: {
@@ -121,26 +119,13 @@ export default function Container({
     value: string
   ) => Promise<HTTPLike<{ value: string }>>;
 
-  updateStartTimeApi: (
-    userId: number,
-    day: number,
-    year: number,
-    leaderboard: number,
-    timestamp: string
-  ) => Promise<HTTPLike<{ timestamp: string }>>;
-  updateStarTimeApi: (
+  batchUpdateTimesApi: (
     userId: number,
     day: number,
     year: number,
     leaderboardId: number,
-    time: string,
-    star: 'star_1' | 'star_2'
-  ) => Promise<HTTPLike<{ timestamp: string }>>;
-  updatePauseApi: (
-    userId: number,
-    pauseId: number,
-    time: string
-  ) => Promise<HTTPLike<void>>;
+    times: EventTime[]
+  ) => Promise<HTTPLike<{}>>;
 
   leaderboardDayStatus: LeaderboardDayStatus[];
   copyDay: (
@@ -165,9 +150,7 @@ export default function Container({
     link,
     updateLink,
     times,
-    updateStartTime,
-    updateStarTime,
-    updatePause
+    batchUpdateTimes
   } = useDay(
     submissionResponse,
     userId,
@@ -182,9 +165,7 @@ export default function Container({
     undoStarApi,
     updateLanguageApi,
     updateSubmission,
-    updateStartTimeApi,
-    updateStarTimeApi,
-    updatePauseApi
+    batchUpdateTimesApi
   );
 
   const [modalState, setModalState] = useState<ModalState>(ModalState.None);
@@ -214,9 +195,7 @@ export default function Container({
         isOpen={ModalState.Clock === modalState}
         close={close}
         times={times}
-        updateStar={updateStarTime}
-        updateStartTime={updateStartTime}
-        updatePause={updatePause}
+        batchUpdateTimes={batchUpdateTimes}
       />
       <CopyModal
         isOpen={ModalState.Copy === modalState}

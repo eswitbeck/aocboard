@@ -123,3 +123,9 @@ type LeaderboardDayStatus = {
   name: string;
   exists: boolean;
 }
+
+type EventTime = {
+  timestamp: string;
+  type: 'start' | 'pause' | 'resume' | 'star_1' | 'star_2';
+  id?: number;
+}

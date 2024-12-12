@@ -63,28 +63,16 @@ const localize = (time: string) => {
   );
 }
 
-
 export default function Time({
   isOpen,
   close,
   times,
-  updateStar,
-  updateStartTime,
-  updatePause
+  batchUpdateTimes
 }: {
   isOpen: boolean;
   close: () => void;
-  times: { 
-    timestamp: string;
-    type: 'start' | 'pause' | 'resume' | 'star_1' | 'star_2';
-    id?: number;
-  }[] | null;
-  updateStar: (
-    timestamp: string,
-    star: 'star_1' | 'star_2'
-  ) => void;
-  updateStartTime: (timestamp: string) => void;
-  updatePause: (timestamp: string, id: number) => void;
+  times: EventTime[] | null;
+  batchUpdateTimes: (updates: EventTime[]) => void;
 }) {
   const isoRegex = new RegExp(
     '([\\d-]{4})-' + // year
@@ -166,11 +154,22 @@ export default function Time({
     }
     const updates = timesBuffer!
       .map((time, i) => {
-        return {
+        const o = {
           timestamp: reformat(time),
           type: times[i].type,
           i
+        } as {
+          timestamp: string;
+          type: 'start' | 'pause' | 'resume' | 'star_1' | 'star_2';
+          i: number;
+          id?: number;
         };
+
+        if (o.type === 'pause' || o.type === 'resume') {
+          o.id = times[i].id;
+        }
+
+        return o;
       })
       .filter((time, index) => {
         return time.timestamp !== times[index].timestamp;
@@ -181,28 +180,7 @@ export default function Time({
       return;
     }
 
-    const promises = updates
-      // The longer term solution is to set up a batch update
-    for (const time of promises) {
-      switch (time.type) {
-        case 'start':
-          await updateStartTime(time.timestamp);
-          break;
-        case 'pause':
-          await updatePause(time.timestamp, times[time.i].id as number);
-          break;
-        case 'resume':
-          await updatePause(time.timestamp, times[time.i].id as number);
-          break;
-        case 'star_1':
-          await updateStar(time.timestamp, 'star_1');
-          break;
-        case 'star_2':
-          await updateStar(time.timestamp, 'star_2');
-          break;
-      }
-    }
-
+    await batchUpdateTimes(updates);
     close();
   }
 
